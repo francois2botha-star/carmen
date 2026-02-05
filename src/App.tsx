@@ -29,7 +29,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <Router basename="/carmen">
         <Routes>
           {/* Public Routes */}
           <Route element={<MainLayout />}>
