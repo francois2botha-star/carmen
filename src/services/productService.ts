@@ -63,15 +63,19 @@ export async function fetchCategories(): Promise<string[]> {
   const { data, error } = await supabase
     .from('products')
     .select('category')
-    .eq('is_active', true)
-    .distinct();
+    .eq('is_active', true);
 
   if (error) {
     console.error('Error fetching categories:', error);
     throw error;
   }
 
-  return data?.map(item => item.category).filter(Boolean) || [];
+  const categories =
+    data
+      ?.map((item: { category: string | null }) => item.category)
+      .filter((category): category is string => Boolean(category)) || [];
+
+  return Array.from(new Set(categories));
 }
 
 /**

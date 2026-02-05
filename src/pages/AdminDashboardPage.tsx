@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { fetchAllOrders, fetchProducts } from '@/services/orderService';
+import { fetchAllOrders } from '@/services/orderService';
 import { fetchProducts as fetchAllProducts } from '@/services/productService';
 import { Order, Product } from '@/types';
 import { formatPrice, formatDate } from '@/utils/helpers';
