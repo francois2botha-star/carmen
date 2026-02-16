@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test('full checkout flow (from cart -> place order) with Supabase stubs', async ({ page }) => {
+  // log page console to help debug E2E runs
+  page.on('console', (msg) => console.log('PAGE_CONSOLE>', msg.text()));
   // stub Supabase REST inserts so CI doesn't need real DB credentials
   await page.route('**/rest/v1/orders*', async (route) => {
     const now = new Date().toISOString();
