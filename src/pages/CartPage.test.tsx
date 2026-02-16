@@ -13,16 +13,19 @@ const mockedItems = [
 ];
 
 vi.mock('@/store/cartStore', () => ({
-  useCartStore: () => ({
-    items: mockedItems,
-    addItem: vi.fn(),
-    removeItem: vi.fn(),
-    updateQuantity: vi.fn(),
-    clearCart: vi.fn(),
-    getTotalItems: () => mockedItems.reduce((s, i) => s + i.quantity, 0),
-    getTotalPrice: () => mockedItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
-    getTotalWeight: () => mockedItems.reduce((s, i) => s + i.product.weight_kg * i.quantity, 0),
-  }),
+  useCartStore: (selector?: any) => {
+    const store = {
+      items: mockedItems,
+      addItem: vi.fn(),
+      removeItem: vi.fn(),
+      updateQuantity: vi.fn(),
+      clearCart: vi.fn(),
+      getTotalItems: () => mockedItems.reduce((s, i) => s + i.quantity, 0),
+      getTotalPrice: () => mockedItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
+      getTotalWeight: () => mockedItems.reduce((s, i) => s + i.product.weight_kg * i.quantity, 0),
+    };
+    return typeof selector === 'function' ? selector(store) : store;
+  },
 }));
 
 describe('Cart UI integration', () => {
