@@ -42,6 +42,8 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   await page.click('text=Add to Cart');
 
   // navigate to cart via the header (client-side navigation preserves in-memory store)
+  // wait for header cart link to be visible and click it (client nav)
+  await page.waitForSelector('a[href="/cart"]', { state: 'visible', timeout: 5000 });
   await page.click('a[href="/cart"]');
   await expect(page.locator(`text=${productName.trim()}`)).toBeVisible();
   await page.click('text=Proceed to Checkout');
