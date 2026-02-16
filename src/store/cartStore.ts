@@ -10,6 +10,7 @@ interface CartStore {
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  getSubtotal: () => number;
   getTotalWeight: () => number;
 }
 
@@ -71,6 +72,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotalPrice: () => {
+        return get().items.reduce(
+          (sum, item) => sum + item.product.price * item.quantity,
+          0
+        );
+      },
+
+      getSubtotal: () => {
         return get().items.reduce(
           (sum, item) => sum + item.product.price * item.quantity,
           0
