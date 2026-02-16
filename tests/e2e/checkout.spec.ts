@@ -41,8 +41,8 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   // add to cart
   await page.click('text=Add to Cart');
 
-  // go to cart and assert the product is present
-  await page.goto('http://localhost:4173/carmen/cart');
+  // navigate to cart via the header (client-side navigation preserves in-memory store)
+  await page.click('a[href="/cart"]');
   await expect(page.locator(`text=${productName.trim()}`)).toBeVisible();
   await page.click('text=Proceed to Checkout');
 
