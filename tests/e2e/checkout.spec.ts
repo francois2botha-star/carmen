@@ -32,35 +32,18 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   // accept any alert dialogs (shipping fallback alerts, etc.)
   page.on('dialog', (d) => d.accept());
 
-  // prepare a persisted cart so we don't depend on product fetch
-  const items = [
-    {
-      product: {
-        id: 'p-e2e',
-        name: 'E2E Product',
-        price: 49.95,
-        weight_kg: 1,
-        images: [],
-        category: 'e2e',
-        is_active: true,
-      },
-      quantity: 2,
-    },
-  ];
+  // add a real product via the UI (more reliable than seeding storage)
+  await page.goto('http://localhost:4173/carmen/shop');
+  // click the first product card to open the product page
+  await page.click('main .grid a');
+  // capture product name from product page
+  const productName = (await page.locator('h1').first().textContent()) || 'Product';
+  // add to cart
+  await page.click('text=Add to Cart');
 
-  // seed persisted cart as the raw state object (matches runtime persist shape)
-  await page.addInitScript((value) => {
-    localStorage.setItem('carmen-cart-storage', value);
-  }, JSON.stringify({ items }));
-
-  // go directly to the cart, proceed to checkout and complete the order
+  // go to cart and assert the product is present
   await page.goto('http://localhost:4173/carmen/cart');
-
-  // debug: dump persisted cart from page localStorage
-  const ls = await page.evaluate(() => localStorage.getItem('carmen-cart-storage'));
-  console.log('E2E localStorage:', ls);
-
-  await expect(page.locator('text=E2E Product')).toBeVisible();
+  await expect(page.locator(`text=${productName.trim()}`)).toBeVisible();
   await page.click('text=Proceed to Checkout');
 
   // fill shipping form
