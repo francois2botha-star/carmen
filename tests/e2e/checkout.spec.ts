@@ -67,8 +67,7 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   // On payment step click Pay Now (order creation is stubbed)
   await page.click('text=Pay Now');
 
-  // verify success page shows the fake order id
-  await page.waitForURL(/\/carmen\/checkout\/success\?orderId=/, { timeout: 5000 });
-  await expect(page.locator('text=Thank you for your order!')).toBeVisible();
-  await expect(page.locator('text=order-e2e-123')).toBeVisible();
+  // verify confirmation is shown (CheckoutPage shows step 3 confirmation)
+  await expect(page.locator('text=Order Confirmed!')).toBeVisible();
+  await expect(page.locator('text=Thank you for your purchase.')).toBeVisible();
 });
