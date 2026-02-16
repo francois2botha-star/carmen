@@ -5,6 +5,7 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   page.on('console', (msg) => console.log('PAGE_CONSOLE>', msg.text()));
   // stub Supabase REST inserts so CI doesn't need real DB credentials
   await page.route('**/rest/v1/orders*', async (route) => {
+    console.log('ROUTE orders ->', route.request().method(), route.request().url());
     const now = new Date().toISOString();
     const fakeOrder = [
       {
