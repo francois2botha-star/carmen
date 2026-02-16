@@ -51,12 +51,11 @@ describe('Cart UI integration', () => {
     // product is listed
     expect(screen.getByText('UI Test Product')).toBeTruthy();
 
-    // quantity visible in cart
-    expect(screen.getByText('2')).toBeTruthy();
+    // quantity visible in cart (quantity + header badge both show `2`)
+    const matches = screen.getAllByText('2');
+    expect(matches.length).toBeGreaterThanOrEqual(2);
 
     // header badge should show total items = 2
-    const badges = screen.getAllByText('2');
-    expect(badges.length).toBeGreaterThanOrEqual(1);
     const header = screen.getByRole('banner');
     const { within } = await import('@testing-library/react');
     expect(within(header).getByText('2')).toBeTruthy();
