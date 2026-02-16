@@ -52,18 +52,17 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
   // fill shipping form
   await expect(page).toHaveURL(/\/carmen\/checkout/);
   await page.fill('input[name="email"]', 'test@example.com');
-  await page.fill('input[name="name"]', 'E2E Tester');
+  await page.fill('input[name="full_name"]', 'E2E Tester');
   await page.fill('input[name="phone"]', '+27123456789');
-  await page.fill('input[name="address"]', '1 Test Lane');
+  await page.fill('input[name="pudo_location"]', 'Pick n Pay, Sandton City');
   await page.fill('input[name="city"]', 'Cape Town');
   await page.selectOption('select[name="province"]', 'Western Cape');
-  await page.fill('input[name="postalCode"]', '8001');
 
-  // continue to review (shipping cost will be calculated — PUDO is mocked or fallback used)
-  await page.click('text=Continue to Review');
+  // continue to payment (shipping cost will be calculated — PUDO is mocked or fallback used)
+  await page.click('text=Continue to Payment');
 
-  // Place order (Supabase insert requests are stubbed above)
-  await page.click('text=Place Order');
+  // On payment step click Pay Now (order creation is stubbed)
+  await page.click('text=Pay Now');
 
   // verify success page shows the fake order id
   await page.waitForURL(/\/carmen\/checkout\/success\?orderId=/, { timeout: 5000 });
