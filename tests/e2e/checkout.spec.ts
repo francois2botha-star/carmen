@@ -48,12 +48,17 @@ test('full checkout flow (from cart -> place order) with Supabase stubs', async 
     },
   ];
 
+  // seed persisted cart as the raw state object (matches runtime persist shape)
   await page.addInitScript((value) => {
     localStorage.setItem('carmen-cart-storage', value);
-  }, JSON.stringify({ state: { items }, version: 0 }));
+  }, JSON.stringify({ items }));
 
   // go directly to the cart, proceed to checkout and complete the order
   await page.goto('http://localhost:4173/carmen/cart');
+
+  // debug: dump persisted cart from page localStorage
+  const ls = await page.evaluate(() => localStorage.getItem('carmen-cart-storage'));
+  console.log('E2E localStorage:', ls);
 
   await expect(page.locator('text=E2E Product')).toBeVisible();
   await page.click('text=Proceed to Checkout');
