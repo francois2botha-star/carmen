@@ -1,0 +1,73 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - link "Carmen" [ref=e7] [cursor=pointer]:
+        - /url: /carmen
+      - navigation [ref=e8]:
+        - link "Home" [ref=e9] [cursor=pointer]:
+          - /url: /carmen
+        - link "Shop" [ref=e10] [cursor=pointer]:
+          - /url: /carmen/shop
+        - link "About" [ref=e11] [cursor=pointer]:
+          - /url: /carmen/about
+        - link "Contact" [ref=e12] [cursor=pointer]:
+          - /url: /carmen/contact
+      - link [ref=e14] [cursor=pointer]:
+        - /url: /carmen/cart
+        - img [ref=e15]
+  - main [ref=e19]:
+    - generic [ref=e21]:
+      - img [ref=e22]
+      - heading "Your cart is empty" [level=2] [ref=e25]
+      - paragraph [ref=e26]: Add some products to your cart to get started
+      - link "Continue Shopping" [ref=e27] [cursor=pointer]:
+        - /url: /carmen/shop
+  - contentinfo [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - heading "Carmen" [level=3] [ref=e32]
+          - paragraph [ref=e33]: Your trusted South African online store for quality products delivered right to your door.
+        - generic [ref=e34]:
+          - heading "Quick Links" [level=4] [ref=e35]
+          - list [ref=e36]:
+            - listitem [ref=e37]:
+              - link "Home" [ref=e38] [cursor=pointer]:
+                - /url: /carmen
+            - listitem [ref=e39]:
+              - link "Shop" [ref=e40] [cursor=pointer]:
+                - /url: /carmen/shop
+            - listitem [ref=e41]:
+              - link "About Us" [ref=e42] [cursor=pointer]:
+                - /url: /carmen/about
+            - listitem [ref=e43]:
+              - link "Contact" [ref=e44] [cursor=pointer]:
+                - /url: /carmen/contact
+        - generic [ref=e45]:
+          - heading "Customer Service" [level=4] [ref=e46]
+          - list [ref=e47]:
+            - listitem [ref=e48]: Shipping Information
+            - listitem [ref=e49]: Returns Policy
+            - listitem [ref=e50]: Terms & Conditions
+            - listitem [ref=e51]: Privacy Policy
+        - generic [ref=e52]:
+          - heading "Get in Touch" [level=4] [ref=e53]
+          - list [ref=e54]:
+            - listitem [ref=e55]:
+              - img [ref=e56]
+              - text: info@carmen.shop
+            - listitem [ref=e59]:
+              - img [ref=e60]
+              - text: +27 12 345 6789
+          - generic [ref=e62]:
+            - link [ref=e63] [cursor=pointer]:
+              - /url: https://facebook.com
+              - img [ref=e64]
+            - link [ref=e66] [cursor=pointer]:
+              - /url: https://instagram.com
+              - img [ref=e67]
+      - paragraph [ref=e71]: © 2026 Carmen. All rights reserved.
+```

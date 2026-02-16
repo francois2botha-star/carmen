@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script>
+      // GitHub Pages SPA redirect (supports query/hash)
+      var path = location.pathname.replace(/^\/carmen/, "");
+      var search = location.search;
+      var hash = location.hash;
+      var target = "/carmen/index.html?_path=" + path + search + hash;
+      location.replace(target);
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting...</h1>
+    <p>If you are not redirected, <a id="redirect-link" href="#">click here</a>.</p>
+    <script>
+      document.getElementById('redirect-link').href = target;
+    </script>
+  </body>
+</html>
