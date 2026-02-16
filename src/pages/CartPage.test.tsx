@@ -21,7 +21,7 @@ vi.mock('@/store/cartStore', () => ({
       updateQuantity: vi.fn(),
       clearCart: vi.fn(),
       getTotalItems: () => mockedItems.reduce((s, i) => s + i.quantity, 0),
-      getTotalPrice: () => mockedItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
+      getSubtotal: () => mockedItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
       getTotalWeight: () => mockedItems.reduce((s, i) => s + i.product.weight_kg * i.quantity, 0),
     };
     return typeof selector === 'function' ? selector(store) : store;
