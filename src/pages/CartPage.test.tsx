@@ -55,7 +55,10 @@ describe('Cart UI integration', () => {
     expect(screen.getByText('2')).toBeTruthy();
 
     // header badge should show total items = 2
-    const badge = screen.getByText('2');
-    expect(badge).toBeTruthy();
+    const badges = screen.getAllByText('2');
+    expect(badges.length).toBeGreaterThanOrEqual(1);
+    const header = screen.getByRole('banner');
+    const { within } = await import('@testing-library/react');
+    expect(within(header).getByText('2')).toBeTruthy();
   });
 });
