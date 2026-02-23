@@ -1,0 +1,1 @@
+import{j as o}from"./index-D4wposUm.js";const a=({children:t,variant:r="primary",...e})=>o.jsx("button",{className:`px-4 py-2 rounded font-semibold ${r==="primary"?"bg-blue-600 text-white":"bg-gray-200 text-gray-800"}`,...e,children:t});export{a as B};

@@ -1,0 +1,1 @@
+import{j as e}from"./index-D4wposUm.js";const t=({label:a,...s})=>e.jsxs("div",{className:"mb-2",children:[a&&e.jsx("label",{className:"block mb-1 font-medium",children:a}),e.jsx("input",{className:"border rounded px-3 py-2 w-full",...s}),s.required&&!s.value&&e.jsx("span",{className:"text-red-500 text-xs",children:"Required"})]});export{t as I};
