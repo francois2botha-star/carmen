@@ -381,7 +381,11 @@ initDatabase()
       console.log(`Store app running at http://localhost:${PORT}`);
     });
   })
-  .catch(() => {
-    console.error('Failed to initialize database. Check SUPABASE_DATABASE_URL and DATABASE_SSL.');
+  .catch((err) => {
+    console.error('Failed to initialize database.');
+    console.error('Error code:', err.code);
+    console.error('Error message:', err.message);
+    console.error('DATABASE_URL set:', Boolean(process.env.SUPABASE_DATABASE_URL));
+    console.error('DATABASE_SSL:', process.env.DATABASE_SSL);
     process.exit(1);
   });
