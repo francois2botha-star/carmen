@@ -31,6 +31,14 @@
     .btn-checkout:hover { background: var(--pink-dark); }
     .btn-continue { background: transparent; color: var(--pink); border: 2px solid var(--pink); }
     .btn-continue:hover { background: var(--pink-pale); }
+    .persist-note { margin-top: 0.9rem; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    @media (max-width: 640px) {
+      .cart-container { padding: 1rem; gap: 1rem; }
+      .cart-item { grid-template-columns: 64px 1fr; gap: 0.8rem; }
+      .cart-item img { width: 64px; height: 84px; }
+      .item-actions { grid-column: 1 / -1; align-items: flex-start; }
+      .action-buttons a, .action-buttons button { font-size: 0.85rem; }
+    }
   </style>
 </head>
 <body>
@@ -146,6 +154,7 @@
             <button class="btn-checkout" onclick="goToProfile()">Proceed to Checkout</button>
             <a class="btn-continue" href="/">← Continue Shopping</a>
           </div>
+          <p class="persist-note">Your cart is saved on this device and browser, so it stays even if you close the site and come back later.</p>
         </div>
       `;
     }

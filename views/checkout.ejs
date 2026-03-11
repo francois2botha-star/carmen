@@ -177,7 +177,7 @@
       container.innerHTML = profileHtml;
     }
 
-    function placeOrder() {
+    async function placeOrder() {
       const profile = JSON.parse(localStorage.getItem('userProfile'));
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
@@ -199,15 +199,27 @@
         orderDetails += `• ${item.name}\n  Option: ${item.option}\n  Quantity: ${item.quantity}\n  Price: R ${subtotal.toFixed(2)}\n`;
       });
 
+      try {
+        await fetch('/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            profile,
+            cart,
+            total
+          })
+        });
+      } catch (_error) {
+        // Continue with WhatsApp flow even if order logging fails.
+      }
+
       orderDetails += `\n*ORDER TOTAL:*\nR ${total.toFixed(2)} (excluding shipping)\n`;
       orderDetails += `\nPlease confirm availability and send payment details. Thank you! 🛍️`;
 
       const waLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderDetails)}`;
-      
-      // Clear cart and profile after placing order
-      localStorage.removeItem('cart');
-      localStorage.removeItem('userProfile');
-      
+
       window.location.href = waLink;
     }
 

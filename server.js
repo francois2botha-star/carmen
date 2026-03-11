@@ -9,8 +9,9 @@ const { v2: cloudinary } = require('cloudinary');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || '!Cowbell@abc!';
-const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27123456789';
+const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27799692789';
 const DEFAULT_CATEGORIES = ['Mens clothing', 'Womens clothing', 'Shoes', 'Perfume', 'Accessories'];
+const ORDER_STATUSES = ['Pending', 'Payment received', 'Order shipped', 'Completed'];
 
 const ADMIN_SESSION_COOKIE = 'carmen_admin_session';
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
@@ -46,6 +47,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 function parseOptions(rawOptions) {
@@ -131,6 +133,24 @@ async function initDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id BIGSERIAL PRIMARY KEY,
+      customer_name TEXT NOT NULL,
+      customer_email TEXT,
+      customer_phone TEXT,
+      customer_alt_phone TEXT,
+      delivery_address TEXT,
+      delivery_city TEXT,
+      delivery_province TEXT,
+      delivery_postal_code TEXT,
+      items_json JSONB NOT NULL,
+      items_total NUMERIC(10, 2) NOT NULL,
+      status TEXT NOT NULL DEFAULT 'Pending',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   for (const category of DEFAULT_CATEGORIES) {
     await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [category]);
   }
@@ -158,8 +178,24 @@ async function ensureCategoryExists(name) {
 }
 
 async function fetchProducts() {
-  const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
+  const result = await pool.query(`
+    SELECT p.*, pi.image_path AS primary_image_path
+    FROM products p
+    LEFT JOIN LATERAL (
+      SELECT image_path
+      FROM product_images
+      WHERE product_id = p.id
+      ORDER BY sort_order ASC, id ASC
+      LIMIT 1
+    ) pi ON TRUE
+    ORDER BY p.created_at DESC
+  `);
   return result.rows.map(toViewProduct);
+}
+
+async function fetchOrders() {
+  const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+  return result.rows;
 }
 
 async function uploadImageToCloudinary(file) {
@@ -217,15 +253,18 @@ async function fetchShopCategories() {
 }
 
 async function renderAdminWithMessage(res, error, success) {
-  const [products, categoryRows] = await Promise.all([
+  const [products, categoryRows, orders] = await Promise.all([
     fetchProducts(),
-    fetchCategories()
+    fetchCategories(),
+    fetchOrders()
   ]);
 
   return res.render('admin', {
     products,
     categoryOptions: categoryRows.map((row) => row.name),
     categories: categoryRows,
+    orders,
+    orderStatuses: ORDER_STATUSES,
     error,
     success
   });
@@ -385,6 +424,78 @@ app.get('/admin', requireAdminAuth, async (_req, res) => {
     return await renderAdminWithMessage(res, null, null);
   } catch (_error) {
     return res.status(500).send('Could not load admin dashboard.');
+  }
+});
+
+app.post('/orders', async (req, res) => {
+  try {
+    const { profile, cart, total } = req.body || {};
+    const safeCart = Array.isArray(cart) ? cart : [];
+    const parsedTotal = Number(total);
+
+    if (!profile || !profile.firstName || !profile.lastName || !safeCart.length || Number.isNaN(parsedTotal) || parsedTotal <= 0) {
+      return res.status(400).json({ error: 'Invalid order payload.' });
+    }
+
+    const customerName = `${(profile.firstName || '').trim()} ${(profile.lastName || '').trim()}`.trim();
+
+    const insertResult = await pool.query(
+      `INSERT INTO orders (
+        customer_name,
+        customer_email,
+        customer_phone,
+        customer_alt_phone,
+        delivery_address,
+        delivery_city,
+        delivery_province,
+        delivery_postal_code,
+        items_json,
+        items_total,
+        status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      RETURNING id`,
+      [
+        customerName,
+        (profile.email || '').trim(),
+        (profile.phone || '').trim(),
+        (profile.altPhone || '').trim(),
+        (profile.address || '').trim(),
+        (profile.city || '').trim(),
+        (profile.province || '').trim(),
+        (profile.postalCode || '').trim(),
+        JSON.stringify(safeCart),
+        parsedTotal,
+        'Pending'
+      ]
+    );
+
+    return res.status(201).json({ id: insertResult.rows[0].id });
+  } catch (_error) {
+    return res.status(500).json({ error: 'Failed to store order.' });
+  }
+});
+
+app.post('/admin/orders/:id/status', requireAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const nextStatus = (req.body.status || '').trim();
+
+    if (!ORDER_STATUSES.includes(nextStatus)) {
+      return await renderAdminWithMessage(res, 'Invalid order status.', null);
+    }
+
+    const updateResult = await pool.query(
+      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING id',
+      [nextStatus, id]
+    );
+
+    if (!updateResult.rows.length) {
+      return await renderAdminWithMessage(res, 'Order not found.', null);
+    }
+
+    return await renderAdminWithMessage(res, null, 'Order status updated.');
+  } catch (_error) {
+    return await renderAdminWithMessage(res, 'Failed to update order status.', null);
   }
 });
 

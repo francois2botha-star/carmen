@@ -13,9 +13,9 @@
   <header class="admin-hero">
     <h1>Admin Panel</h1>
     <p>Manage your products and categories.</p>
-    <div style="display:flex;justify-content:center;gap:0.7rem;flex-wrap:wrap;">
+    <div class="admin-hero-actions">
       <a href="/">View Store &rarr;</a>
-      <form action="/admin/logout" method="POST">
+      <form action="/admin/logout" method="POST" class="admin-logout-form">
         <button type="submit" class="btn-secondary">Logout</button>
       </form>
     </div>
@@ -39,16 +39,16 @@
 
         <label>
           Description
-          <textarea name="description" rows="3" placeholder="Optional"></textarea>
+          <textarea name="description" rows="3" placeholder="e.g. Soft stretch cotton shirt with a relaxed fit (optional)"></textarea>
         </label>
 
         <label>
           Price (ZAR)
-          <input type="number" name="price" min="1" step="0.01" required />
+          <input type="number" name="price" min="1" step="0.01" placeholder="e.g. 499.00" required />
         </label>
 
         <label>
-          Options (comma-separated)
+          Sizes/Volumes (comma-separated)
           <input type="text" name="options" placeholder="S, M, L or 50ml, 100ml" required />
         </label>
 
@@ -113,16 +113,26 @@
       <div class="admin-list">
         <% products.forEach((product) => { %>
           <article class="admin-item">
-            <div>
+            <div class="admin-product-head">
+              <% if (product.primary_image_path || product.image_path) { %>
+                <img
+                  class="admin-product-thumb"
+                  src="<%= product.primary_image_path || product.image_path %>"
+                  alt="<%= product.name %>"
+                  loading="lazy"
+                />
+              <% } %>
+              <div>
               <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
               <p class="meta">R <%= Number(product.price).toFixed(2) %> &bull; <%= product.gender %> &bull; <%= product.in_stock ? 'In stock' : 'Out of stock' %></p>
+              </div>
             </div>
 
             <form action="/admin/products/<%= product.id %>/update" method="POST" enctype="multipart/form-data" class="edit-form">
-              <input type="text" name="name" value="<%= product.name %>" required />
-              <textarea name="description" rows="2" placeholder="Optional"><%= product.description %></textarea>
-              <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" required />
-              <input type="text" name="options" value="<%= product.optionsArray.join(', ') %>" required />
+              <input type="text" name="name" value="<%= product.name %>" placeholder="Product name" required />
+              <textarea name="description" rows="2" placeholder="e.g. Lightweight fragrance, citrus top notes (optional)"><%= product.description %></textarea>
+              <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" placeholder="e.g. 899.00" required />
+              <input type="text" name="options" value="<%= product.optionsArray.join(', ') %>" placeholder="e.g. S, M, L or 30ml, 50ml" required />
               <% const isCustomCategory = !categoryOptions.includes(product.gender); %>
               <select name="category" class="category-select" data-custom-target="edit-custom-<%= product.id %>" required>
                 <option value="">Select category</option>
@@ -152,6 +162,59 @@
 
             <form action="/admin/products/<%= product.id %>/delete" method="POST" class="delete-form">
               <button type="submit" class="btn-danger">Delete</button>
+            </form>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="admin-card" style="grid-column: 1 / -1;">
+      <h2>Order History</h2>
+      <% if (!orders.length) { %>
+        <p>No orders yet.</p>
+      <% } %>
+
+      <div class="admin-list" style="max-height: 60vh;">
+        <% orders.forEach((order) => { %>
+          <article class="admin-item">
+            <h3>Order #<%= order.id %> &bull; <%= order.customer_name %></h3>
+            <p class="meta">
+              <strong>Status:</strong> <%= order.status %> &bull;
+              <strong>Total:</strong> R <%= Number(order.items_total).toFixed(2) %> &bull;
+              <strong>Date:</strong> <%= new Date(order.created_at).toLocaleString() %>
+            </p>
+            <p class="meta">
+              <strong>Phone:</strong> <%= order.customer_phone || 'N/A' %> &bull;
+              <strong>Email:</strong> <%= order.customer_email || 'N/A' %>
+            </p>
+            <p class="meta">
+              <strong>Address:</strong>
+              <%= [order.delivery_address, order.delivery_city, order.delivery_province, order.delivery_postal_code].filter(Boolean).join(', ') || 'N/A' %>
+            </p>
+
+            <% const orderItems = Array.isArray(order.items_json) ? order.items_json : []; %>
+            <% if (orderItems.length) { %>
+              <div class="order-items-admin">
+                <% orderItems.forEach((item) => { %>
+                  <div class="order-item-admin-row">
+                    <span><%= item.name %> (<%= item.option %>) × <%= item.quantity %></span>
+                    <span>R <%= Number(item.price * item.quantity).toFixed(2) %></span>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <form action="/admin/orders/<%= order.id %>/status" method="POST" class="admin-order-actions">
+              <% orderStatuses.forEach((status) => { %>
+                <button
+                  type="submit"
+                  name="status"
+                  value="<%= status %>"
+                  class="<%= order.status === status ? '' : 'btn-secondary' %>"
+                >
+                  <%= status %>
+                </button>
+              <% }) %>
             </form>
           </article>
         <% }) %>
