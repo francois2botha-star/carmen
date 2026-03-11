@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -7,9 +8,16 @@ const { v2: cloudinary } = require('cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-me';
+const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || '!Cowbell@abc!';
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27123456789';
-const CATEGORY_OPTIONS = ['Mens clothing', 'Womens clothing', 'Shoes', 'Perfume', 'Accessories'];
+const DEFAULT_CATEGORIES = ['Mens clothing', 'Womens clothing', 'Shoes', 'Perfume', 'Accessories'];
+
+const ADMIN_SESSION_COOKIE = 'carmen_admin_session';
+const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
+const ADMIN_SESSION_VALUE = crypto
+  .createHash('sha256')
+  .update(`${ADMIN_PANEL_PASSWORD}|${process.env.ADMIN_SESSION_SALT || 'carmen-boutique'}`)
+  .digest('hex');
 
 const pool = new Pool({
   host: process.env.PGHOST,
@@ -26,7 +34,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    files: 5,
+    fileSize: 8 * 1024 * 1024
+  }
+});
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -53,6 +67,28 @@ function resolveCategory(category, customCategory) {
   return selected;
 }
 
+function getCookie(req, cookieName) {
+  const raw = req.headers.cookie || '';
+  const cookies = raw.split(';').map((entry) => entry.trim()).filter(Boolean);
+  const token = `${cookieName}=`;
+  const found = cookies.find((entry) => entry.startsWith(token));
+  if (!found) {
+    return null;
+  }
+  return decodeURIComponent(found.slice(token.length));
+}
+
+function isAdminAuthenticated(req) {
+  return getCookie(req, ADMIN_SESSION_COOKIE) === ADMIN_SESSION_VALUE;
+}
+
+function requireAdminAuth(req, res, next) {
+  if (!isAdminAuthenticated(req)) {
+    return res.redirect('/admin/login');
+  }
+  return next();
+}
+
 function toViewProduct(row) {
   return {
     ...row,
@@ -77,27 +113,53 @@ async function initDatabase() {
   `);
 
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS categories (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  await pool.query(
-    `INSERT INTO settings (key, value) VALUES ('hide_out_of_stock', '0') ON CONFLICT (key) DO NOTHING`
-  );
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS product_images (
+      id BIGSERIAL PRIMARY KEY,
+      product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      image_path TEXT NOT NULL,
+      image_public_id TEXT,
+      sort_order INT NOT NULL DEFAULT 1,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  for (const category of DEFAULT_CATEGORIES) {
+    await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [category]);
+  }
+
+  await pool.query(`
+    INSERT INTO categories (name)
+    SELECT DISTINCT TRIM(gender)
+    FROM products
+    WHERE gender IS NOT NULL AND TRIM(gender) <> ''
+    ON CONFLICT (name) DO NOTHING
+  `);
+}
+
+async function fetchCategories() {
+  const result = await pool.query('SELECT id, name FROM categories ORDER BY name ASC');
+  return result.rows;
+}
+
+async function ensureCategoryExists(name) {
+  const value = (name || '').trim();
+  if (!value) {
+    return;
+  }
+  await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [value]);
 }
 
 async function fetchProducts() {
   const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
   return result.rows.map(toViewProduct);
-}
-
-async function getStorefrontSettings() {
-  const result = await pool.query("SELECT value FROM settings WHERE key = 'hide_out_of_stock'");
-  return {
-    hideOutOfStock: result.rows[0] ? result.rows[0].value === '1' : false
-  };
 }
 
 async function uploadImageToCloudinary(file) {
@@ -108,15 +170,15 @@ async function uploadImageToCloudinary(file) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: 'carmen-boutique' },
-      (error, result) => {
+      (error, uploadResult) => {
         if (error) {
           reject(error);
           return;
         }
 
         resolve({
-          imagePath: result.secure_url,
-          imagePublicId: result.public_id
+          imagePath: uploadResult.secure_url,
+          imagePublicId: uploadResult.public_id
         });
       }
     );
@@ -137,16 +199,33 @@ async function deleteCloudinaryImage(publicId) {
   }
 }
 
+async function fetchProductImages(productId) {
+  const result = await pool.query(
+    `SELECT image_path, image_public_id, sort_order
+     FROM product_images
+     WHERE product_id = $1
+     ORDER BY sort_order ASC, id ASC`,
+    [productId]
+  );
+
+  return result.rows;
+}
+
+async function fetchShopCategories() {
+  const categories = await fetchCategories();
+  return categories.map((row) => row.name);
+}
+
 async function renderAdminWithMessage(res, error, success) {
-  const [products, storefrontSettings] = await Promise.all([
+  const [products, categoryRows] = await Promise.all([
     fetchProducts(),
-    getStorefrontSettings()
+    fetchCategories()
   ]);
 
   return res.render('admin', {
     products,
-    categoryOptions: CATEGORY_OPTIONS,
-    storefrontSettings,
+    categoryOptions: categoryRows.map((row) => row.name),
+    categories: categoryRows,
     error,
     success
   });
@@ -154,7 +233,6 @@ async function renderAdminWithMessage(res, error, success) {
 
 app.get('/', async (req, res) => {
   try {
-    const storefrontSettings = await getStorefrontSettings();
     const selectedCategory = (req.query.category || 'All').trim();
     const hasFilter = selectedCategory && selectedCategory !== 'All';
 
@@ -166,26 +244,21 @@ app.get('/', async (req, res) => {
       sql += ` WHERE gender = $${params.length}`;
     }
 
-    if (storefrontSettings.hideOutOfStock) {
-      sql += hasFilter ? ' AND in_stock = TRUE' : ' WHERE in_stock = TRUE';
-    }
-
     sql += ' ORDER BY created_at DESC';
 
-    const productResult = await pool.query(sql, params);
-    const categoryResult = await pool.query(
-      "SELECT DISTINCT gender FROM products WHERE gender IS NOT NULL AND TRIM(gender) <> '' ORDER BY gender ASC"
-    );
+    const [productResult, categoryRows] = await Promise.all([
+      pool.query(sql, params),
+      fetchCategories()
+    ]);
 
     const products = productResult.rows.map(toViewProduct);
-    const categories = ['All', ...categoryResult.rows.map((row) => row.gender)];
+    const categories = ['All', ...categoryRows.map((row) => row.name)];
     const safeSelectedCategory = categories.includes(selectedCategory) ? selectedCategory : 'All';
 
     return res.render('index', {
       products,
       categories,
       selectedCategory: safeSelectedCategory,
-      storefrontSettings,
       whatsappNumber: normalizePhone(WHATSAPP_NUMBER)
     });
   } catch (_error) {
@@ -193,10 +266,43 @@ app.get('/', async (req, res) => {
   }
 });
 
+app.get('/products/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const productResult = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+
+    if (!productResult.rows.length) {
+      return res.status(404).send('Product not found.');
+    }
+
+    const product = toViewProduct(productResult.rows[0]);
+    const images = await fetchProductImages(id);
+
+    const galleryImages = images.map((imageRow) => imageRow.image_path);
+    if (product.image_path && !galleryImages.includes(product.image_path)) {
+      galleryImages.unshift(product.image_path);
+    }
+
+    return res.render('product', {
+      product: {
+        ...product,
+        galleryImages
+      },
+      categories: await fetchShopCategories(),
+      whatsappNumber: normalizePhone(WHATSAPP_NUMBER)
+    });
+  } catch (_error) {
+    return res.status(500).send('Could not load product page.');
+  }
+});
+
 app.get('/cart', async (req, res) => {
   try {
-    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
-    return res.render('cart', { whatsappNumber });
+    const [whatsappNumber, categories] = await Promise.all([
+      Promise.resolve(normalizePhone(WHATSAPP_NUMBER)),
+      fetchShopCategories()
+    ]);
+    return res.render('cart', { whatsappNumber, categories });
   } catch (_error) {
     return res.status(500).send('Could not load cart.');
   }
@@ -204,8 +310,11 @@ app.get('/cart', async (req, res) => {
 
 app.get('/profile', async (req, res) => {
   try {
-    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
-    return res.render('profile', { whatsappNumber });
+    const [whatsappNumber, categories] = await Promise.all([
+      Promise.resolve(normalizePhone(WHATSAPP_NUMBER)),
+      fetchShopCategories()
+    ]);
+    return res.render('profile', { whatsappNumber, categories });
   } catch (_error) {
     return res.status(500).send('Could not load profile page.');
   }
@@ -213,8 +322,11 @@ app.get('/profile', async (req, res) => {
 
 app.get('/checkout', async (req, res) => {
   try {
-    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
-    return res.render('checkout', { whatsappNumber });
+    const [whatsappNumber, categories] = await Promise.all([
+      Promise.resolve(normalizePhone(WHATSAPP_NUMBER)),
+      fetchShopCategories()
+    ]);
+    return res.render('checkout', { whatsappNumber, categories });
   } catch (_error) {
     return res.status(500).send('Could not load checkout page.');
   }
@@ -222,8 +334,11 @@ app.get('/checkout', async (req, res) => {
 
 app.get('/about', async (req, res) => {
   try {
-    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
-    return res.render('about', { whatsappNumber });
+    const [whatsappNumber, categories] = await Promise.all([
+      Promise.resolve(normalizePhone(WHATSAPP_NUMBER)),
+      fetchShopCategories()
+    ]);
+    return res.render('about', { whatsappNumber, categories });
   } catch (_error) {
     return res.status(500).send('Could not load about page.');
   }
@@ -231,14 +346,41 @@ app.get('/about', async (req, res) => {
 
 app.get('/contact', async (req, res) => {
   try {
-    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
-    return res.render('contact', { whatsappNumber });
+    const [whatsappNumber, categories] = await Promise.all([
+      Promise.resolve(normalizePhone(WHATSAPP_NUMBER)),
+      fetchShopCategories()
+    ]);
+    return res.render('contact', { whatsappNumber, categories });
   } catch (_error) {
     return res.status(500).send('Could not load contact page.');
   }
 });
 
-app.get('/admin', async (_req, res) => {
+app.get('/admin/login', (_req, res) => {
+  return res.render('admin-login', { error: null });
+});
+
+app.post('/admin/login', (req, res) => {
+  const { password } = req.body;
+
+  if (password !== ADMIN_PANEL_PASSWORD) {
+    return res.status(401).render('admin-login', { error: 'Invalid password.' });
+  }
+
+  res.setHeader(
+    'Set-Cookie',
+    `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(ADMIN_SESSION_VALUE)}; Max-Age=${ADMIN_SESSION_TTL_SECONDS}; Path=/admin; HttpOnly; SameSite=Lax`
+  );
+
+  return res.redirect('/admin');
+});
+
+app.post('/admin/logout', requireAdminAuth, (_req, res) => {
+  res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; Max-Age=0; Path=/admin; HttpOnly; SameSite=Lax`);
+  return res.redirect('/admin/login');
+});
+
+app.get('/admin', requireAdminAuth, async (_req, res) => {
   try {
     return await renderAdminWithMessage(res, null, null);
   } catch (_error) {
@@ -246,10 +388,46 @@ app.get('/admin', async (_req, res) => {
   }
 });
 
-app.post('/admin/products', upload.single('image'), async (req, res) => {
+app.post('/admin/categories', requireAdminAuth, async (req, res) => {
+  try {
+    const name = (req.body.name || '').trim();
+    if (!name) {
+      return await renderAdminWithMessage(res, 'Category name is required.', null);
+    }
+
+    await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [name]);
+    return await renderAdminWithMessage(res, null, 'Category saved.');
+  } catch (_error) {
+    return await renderAdminWithMessage(res, 'Failed to save category.', null);
+  }
+});
+
+app.post('/admin/categories/:id/delete', requireAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const categoryResult = await pool.query('SELECT id, name FROM categories WHERE id = $1', [id]);
+    if (!categoryResult.rows.length) {
+      return await renderAdminWithMessage(res, 'Category not found.', null);
+    }
+
+    const categoryName = categoryResult.rows[0].name;
+    const usageResult = await pool.query('SELECT COUNT(*)::INT AS count FROM products WHERE gender = $1', [categoryName]);
+
+    if (usageResult.rows[0].count > 0) {
+      return await renderAdminWithMessage(res, 'Cannot remove category that is still used by products.', null);
+    }
+
+    await pool.query('DELETE FROM categories WHERE id = $1', [id]);
+    return await renderAdminWithMessage(res, null, 'Category removed.');
+  } catch (_error) {
+    return await renderAdminWithMessage(res, 'Failed to remove category.', null);
+  }
+});
+
+app.post('/admin/products', requireAdminAuth, upload.array('images', 5), async (req, res) => {
   try {
     const {
-      adminPassword,
       name,
       description,
       price,
@@ -258,10 +436,6 @@ app.post('/admin/products', upload.single('image'), async (req, res) => {
       customCategory,
       inStock
     } = req.body;
-
-    if (adminPassword !== ADMIN_PASSWORD) {
-      return await renderAdminWithMessage(res, 'Invalid admin password.', null);
-    }
 
     const resolvedCategory = resolveCategory(category, customCategory);
     if (!name || !price || !options || !resolvedCategory) {
@@ -278,34 +452,48 @@ app.post('/admin/products', upload.single('image'), async (req, res) => {
       return await renderAdminWithMessage(res, 'Price must be a valid number greater than zero.', null);
     }
 
-    const { imagePath, imagePublicId } = await uploadImageToCloudinary(req.file);
+    const files = (req.files || []).slice(0, 5);
+    const uploadedImages = await Promise.all(files.map((file) => uploadImageToCloudinary(file)));
+    const primaryImage = uploadedImages[0] || { imagePath: null, imagePublicId: null };
 
-    await pool.query(
+    const insertResult = await pool.query(
       `INSERT INTO products (name, description, price, sizes, gender, image_path, image_public_id, in_stock)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id`,
       [
         name.trim(),
         (description || '').trim(),
         parsedPrice,
         parsedOptions.join(', '),
         resolvedCategory,
-        imagePath,
-        imagePublicId,
+        primaryImage.imagePath,
+        primaryImage.imagePublicId,
         Boolean(inStock)
       ]
     );
 
+    const productId = insertResult.rows[0].id;
+
+    for (let index = 0; index < uploadedImages.length; index += 1) {
+      const image = uploadedImages[index];
+      await pool.query(
+        `INSERT INTO product_images (product_id, image_path, image_public_id, sort_order)
+         VALUES ($1, $2, $3, $4)`,
+        [productId, image.imagePath, image.imagePublicId, index + 1]
+      );
+    }
+
+    await ensureCategoryExists(resolvedCategory);
     return await renderAdminWithMessage(res, null, 'Product added successfully.');
   } catch (_error) {
-     console.error('Error creating product:', _error);
-     return await renderAdminWithMessage(res, `Error: ${_error.message || 'Failed to save product.'}`, null);
+    console.error('Error creating product:', _error);
+    return await renderAdminWithMessage(res, `Error: ${_error.message || 'Failed to save product.'}`, null);
   }
 });
 
-app.post('/admin/products/:id/update', upload.single('image'), async (req, res) => {
+app.post('/admin/products/:id/update', requireAdminAuth, upload.array('images', 5), async (req, res) => {
   try {
     const {
-      adminPassword,
       name,
       description,
       price,
@@ -315,10 +503,6 @@ app.post('/admin/products/:id/update', upload.single('image'), async (req, res) 
       inStock
     } = req.body;
     const { id } = req.params;
-
-    if (adminPassword !== ADMIN_PASSWORD) {
-      return await renderAdminWithMessage(res, 'Invalid admin password.', null);
-    }
 
     const resolvedCategory = resolveCategory(category, customCategory);
     if (!name || !price || !options || !resolvedCategory) {
@@ -344,14 +528,40 @@ app.post('/admin/products/:id/update', upload.single('image'), async (req, res) 
       return await renderAdminWithMessage(res, 'Product not found.', null);
     }
 
-    const existing = existingResult.rows[0];
-    let nextImagePath = existing.image_path;
-    let nextImagePublicId = existing.image_public_id;
+    const files = (req.files || []).slice(0, 5);
+    let nextImagePath = existingResult.rows[0].image_path;
+    let nextImagePublicId = existingResult.rows[0].image_public_id;
 
-    if (req.file) {
-      const uploadResult = await uploadImageToCloudinary(req.file);
-      nextImagePath = uploadResult.imagePath;
-      nextImagePublicId = uploadResult.imagePublicId;
+    if (files.length) {
+      const oldGalleryResult = await pool.query(
+        'SELECT image_public_id FROM product_images WHERE product_id = $1',
+        [id]
+      );
+
+      const oldIds = [
+        existingResult.rows[0].image_public_id,
+        ...oldGalleryResult.rows.map((row) => row.image_public_id)
+      ].filter(Boolean);
+
+      const uniqueOldIds = [...new Set(oldIds)];
+      for (const publicId of uniqueOldIds) {
+        await deleteCloudinaryImage(publicId);
+      }
+
+      await pool.query('DELETE FROM product_images WHERE product_id = $1', [id]);
+
+      const uploadedImages = await Promise.all(files.map((file) => uploadImageToCloudinary(file)));
+      nextImagePath = uploadedImages[0].imagePath;
+      nextImagePublicId = uploadedImages[0].imagePublicId;
+
+      for (let index = 0; index < uploadedImages.length; index += 1) {
+        const image = uploadedImages[index];
+        await pool.query(
+          `INSERT INTO product_images (product_id, image_path, image_public_id, sort_order)
+           VALUES ($1, $2, $3, $4)`,
+          [id, image.imagePath, image.imagePublicId, index + 1]
+        );
+      }
     }
 
     await pool.query(
@@ -371,24 +581,22 @@ app.post('/admin/products/:id/update', upload.single('image'), async (req, res) 
       ]
     );
 
-    if (req.file && existing.image_public_id) {
-      await deleteCloudinaryImage(existing.image_public_id);
-    }
-
+    await ensureCategoryExists(resolvedCategory);
     return await renderAdminWithMessage(res, null, 'Product updated successfully.');
   } catch (_error) {
-    return res.status(500).send('Failed to update product.');
+    console.error('Error updating product:', _error);
+    return await renderAdminWithMessage(res, 'Failed to update product.', null);
   }
 });
 
-app.post('/admin/products/:id/delete', async (req, res) => {
+app.post('/admin/products/:id/delete', requireAdminAuth, async (req, res) => {
   try {
-    const { adminPassword } = req.body;
     const { id } = req.params;
 
-    if (adminPassword !== ADMIN_PASSWORD) {
-      return await renderAdminWithMessage(res, 'Invalid admin password.', null);
-    }
+    const galleryResult = await pool.query(
+      'SELECT image_public_id FROM product_images WHERE product_id = $1',
+      [id]
+    );
 
     const result = await pool.query(
       'DELETE FROM products WHERE id = $1 RETURNING image_public_id',
@@ -399,29 +607,19 @@ app.post('/admin/products/:id/delete', async (req, res) => {
       return await renderAdminWithMessage(res, 'Product not found.', null);
     }
 
-    await deleteCloudinaryImage(result.rows[0].image_public_id);
-    return await renderAdminWithMessage(res, null, 'Product deleted successfully.');
-  } catch (_error) {
-    return res.status(500).send('Failed to delete product.');
-  }
-});
+    const allPublicIds = [
+      result.rows[0].image_public_id,
+      ...galleryResult.rows.map((row) => row.image_public_id)
+    ].filter(Boolean);
 
-app.post('/admin/settings/storefront', async (req, res) => {
-  try {
-    const { adminPassword, hideOutOfStock } = req.body;
-
-    if (adminPassword !== ADMIN_PASSWORD) {
-      return await renderAdminWithMessage(res, 'Invalid admin password.', null);
+    const uniquePublicIds = [...new Set(allPublicIds)];
+    for (const publicId of uniquePublicIds) {
+      await deleteCloudinaryImage(publicId);
     }
 
-    await pool.query(
-      "UPDATE settings SET value = $1 WHERE key = 'hide_out_of_stock'",
-      [hideOutOfStock ? '1' : '0']
-    );
-
-    return await renderAdminWithMessage(res, null, 'Storefront settings updated.');
+    return await renderAdminWithMessage(res, null, 'Product deleted successfully.');
   } catch (_error) {
-    return res.status(500).send('Failed to update storefront settings.');
+    return await renderAdminWithMessage(res, 'Failed to delete product.', null);
   }
 });
 

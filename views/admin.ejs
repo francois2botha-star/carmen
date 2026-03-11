@@ -12,8 +12,13 @@
 <body>
   <header class="admin-hero">
     <h1>Admin Panel</h1>
-    <p>Manage your products and storefront settings.</p>
-    <a href="/">View Store &rarr;</a>
+    <p>Manage your products and categories.</p>
+    <div style="display:flex;justify-content:center;gap:0.7rem;flex-wrap:wrap;">
+      <a href="/">View Store &rarr;</a>
+      <form action="/admin/logout" method="POST">
+        <button type="submit" class="btn-secondary">Logout</button>
+      </form>
+    </div>
   </header>
 
   <main class="admin-layout">
@@ -27,11 +32,6 @@
       <% } %>
 
       <form action="/admin/products" method="POST" enctype="multipart/form-data" class="admin-form">
-        <label>
-          Admin Password
-          <input type="password" name="adminPassword" required />
-        </label>
-
         <label>
           Product Name
           <input type="text" name="name" required />
@@ -69,8 +69,8 @@
         </label>
 
         <label>
-          Product Image
-          <input type="file" name="image" accept="image/*" />
+          Product Images (up to 5)
+          <input type="file" name="images" accept="image/*" multiple />
         </label>
 
         <label class="checkbox-line">
@@ -83,23 +83,28 @@
     </section>
 
     <section class="admin-card">
-      <h2>Storefront Settings</h2>
-      <form action="/admin/settings/storefront" method="POST" class="admin-form">
+      <h2>Manage Categories</h2>
+      <form action="/admin/categories" method="POST" class="admin-form" style="margin-bottom:1rem;">
         <label>
-          Admin Password
-          <input type="password" name="adminPassword" required />
+          New Category
+          <input type="text" name="name" placeholder="e.g. Dresses" required />
         </label>
-
-        <label class="checkbox-line">
-          <input type="checkbox" name="hideOutOfStock" value="1" <%= storefrontSettings.hideOutOfStock ? 'checked' : '' %> />
-          Hide out-of-stock products from storefront
-        </label>
-
-        <button type="submit">Save Settings</button>
+        <button type="submit">Add Category</button>
       </form>
+
+      <div class="admin-list" style="max-height: 220px;">
+        <% categories.forEach((categoryItem) => { %>
+          <article class="admin-item" style="display:flex;align-items:center;justify-content:space-between;gap:0.8rem;">
+            <h3 style="margin:0;"><%= categoryItem.name %></h3>
+            <form action="/admin/categories/<%= categoryItem.id %>/delete" method="POST">
+              <button type="submit" class="btn-danger">Remove</button>
+            </form>
+          </article>
+        <% }) %>
+      </div>
     </section>
 
-    <section class="admin-card">
+    <section class="admin-card" style="grid-column: 1 / -1;">
       <h2>Current Products</h2>
       <% if (!products.length) { %>
         <p>No products yet.</p>
@@ -109,12 +114,11 @@
         <% products.forEach((product) => { %>
           <article class="admin-item">
             <div>
-              <h3><%= product.name %></h3>
+              <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
               <p class="meta">R <%= Number(product.price).toFixed(2) %> &bull; <%= product.gender %> &bull; <%= product.in_stock ? 'In stock' : 'Out of stock' %></p>
             </div>
 
             <form action="/admin/products/<%= product.id %>/update" method="POST" enctype="multipart/form-data" class="edit-form">
-              <input type="password" name="adminPassword" placeholder="Admin password" required />
               <input type="text" name="name" value="<%= product.name %>" required />
               <textarea name="description" rows="2" placeholder="Optional"><%= product.description %></textarea>
               <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" required />
@@ -140,14 +144,13 @@
                 In stock
               </label>
               <label>
-                Replace image (optional)
-                <input type="file" name="image" accept="image/*" />
+                Replace gallery images (up to 5)
+                <input type="file" name="images" accept="image/*" multiple />
               </label>
               <button type="submit">Update</button>
             </form>
 
             <form action="/admin/products/<%= product.id %>/delete" method="POST" class="delete-form">
-              <input type="password" name="adminPassword" placeholder="Admin password" required />
               <button type="submit" class="btn-danger">Delete</button>
             </form>
           </article>

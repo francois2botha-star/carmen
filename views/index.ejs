@@ -16,7 +16,14 @@
   <nav class="top-nav">
     <a class="nav-brand" href="/">Carmen Boutique</a>
     <div class="nav-links">
-      <a href="/#catalog">Shop</a>
+      <div class="nav-dropdown">
+        <a href="/#catalog">Shop</a>
+        <div class="nav-submenu">
+          <% categories.filter((category) => category !== 'All').forEach((category) => { %>
+            <a href="/?category=<%= encodeURIComponent(category) %>"><%= category %></a>
+          <% }) %>
+        </div>
+      </div>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
       <a href="/cart" style="position: relative;">
@@ -71,9 +78,6 @@
       <span class="section-label">Our collection</span>
       <h2>Shop everything</h2>
       <p class="sub">Filter by category or browse all &mdash; every piece is ready to order on WhatsApp.</p>
-      <% if (storefrontSettings.hideOutOfStock) { %>
-        <span class="stock-mode">&#10003; Showing in-stock items only</span>
-      <% } %>
       <form class="catalog-filter" method="GET" action="/">
         <% categories.forEach(function(category) { %>
           <button
@@ -98,16 +102,18 @@
         <% products.forEach(function(product) { %>
           <article class="product-card" data-product-id="<%= product.id %>">
             <div class="media-wrap">
-              <% if (product.image_path) { %>
-                <img src="<%= product.image_path %>" alt="<%= product.name %>" loading="lazy" />
-              <% } else { %>
-                <div class="placeholder">No image</div>
-              <% } %>
+              <a href="/products/<%= product.id %>">
+                <% if (product.image_path) { %>
+                  <img src="<%= product.image_path %>" alt="<%= product.name %>" loading="lazy" />
+                <% } else { %>
+                  <div class="placeholder">No image</div>
+                <% } %>
+              </a>
               <span class="category-tag"><%= product.gender %></span>
             </div>
 
             <div class="product-meta">
-              <h3><%= product.name %></h3>
+              <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
               <p class="description"><%= product.description || '' %></p>
               <p class="price">R <%= Number(product.price).toFixed(2) %></p>
 
@@ -126,7 +132,16 @@
               </p>
 
               <% if (product.in_stock) { %>
-                <button class="wa-button add-to-cart-btn" style="cursor: pointer;" onclick="addToCart({ id: <%= product.id %>, name: '<%= product.name.replace(/'/g, "\\'") %>', price: <%= product.price %>, category: '<%= product.gender %>', image: '<%= product.image_path %>' })">
+                <button
+                  class="wa-button add-to-cart-btn"
+                  style="cursor: pointer;"
+                  data-product-id="<%= product.id %>"
+                  data-product-name="<%= product.name %>"
+                  data-product-price="<%= Number(product.price) %>"
+                  data-product-category="<%= product.gender %>"
+                  data-product-image="<%= product.image_path || '' %>"
+                  onclick="addToCartFromButton(this)"
+                >
                   + Add to Cart
                 </button>
               <% } else { %>

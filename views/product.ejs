@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= product.name %> | Carmen Boutique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <div class="nav-dropdown">
+        <a href="/#catalog">Shop</a>
+        <div class="nav-submenu">
+          <% categories.forEach((category) => { %>
+            <a href="/?category=<%= encodeURIComponent(category) %>"><%= category %></a>
+          <% }) %>
+        </div>
+      </div>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/cart">Cart</a>
+      <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+    </div>
+  </nav>
+
+  <main class="product-page">
+    <section class="product-gallery-card">
+      <div class="gallery-main-wrap">
+        <% if (product.galleryImages.length) { %>
+          <img id="mainProductImage" src="<%= product.galleryImages[0] %>" alt="<%= product.name %>" />
+        <% } else { %>
+          <div class="placeholder" style="min-height: 460px;">No image</div>
+        <% } %>
+      </div>
+      <% if (product.galleryImages.length > 1) { %>
+        <div class="gallery-thumbs">
+          <% product.galleryImages.forEach((imagePath, index) => { %>
+            <button type="button" class="gallery-thumb <%= index === 0 ? 'active' : '' %>" data-image="<%= imagePath %>">
+              <img src="<%= imagePath %>" alt="<%= product.name %> image <%= index + 1 %>" />
+            </button>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="product-info-card">
+      <span class="category-tag" style="position: static; display:inline-block; margin-bottom: 0.7rem;"><%= product.gender %></span>
+      <h1><%= product.name %></h1>
+      <p class="price">R <%= Number(product.price).toFixed(2) %></p>
+      <p style="color: var(--muted); margin-bottom: 1rem;"><%= product.description || '' %></p>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem;">Select option:</label>
+        <select id="productOptionSelect" style="width: 100%; border: 1.5px solid var(--card-border); border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; color: var(--ink); background: white;">
+          <option value="">-- Choose size/variant --</option>
+          <% product.optionsArray.forEach((option) => { %>
+            <option value="<%= option %>"><%= option %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <p class="stock <%= product.in_stock ? 'yes' : 'no' %>"><%= product.in_stock ? '✓ In stock' : '✗ Out of stock' %></p>
+
+      <% if (product.in_stock) { %>
+        <button
+          class="wa-button"
+          data-product-id="<%= product.id %>"
+          data-product-name="<%= product.name %>"
+          data-product-price="<%= Number(product.price) %>"
+          data-product-category="<%= product.gender %>"
+          data-product-image="<%= product.image_path || '' %>"
+          onclick="addToCartFromButton(this, '#productOptionSelect')"
+        >
+          + Add to Cart
+        </button>
+      <% } else { %>
+        <button class="wa-button disabled" disabled>Out of stock</button>
+      <% } %>
+    </section>
+  </main>
+
+  <script src="/cart.js"></script>
+  <script>
+    document.querySelectorAll('.gallery-thumb').forEach((button) => {
+      button.addEventListener('click', () => {
+        const mainImage = document.getElementById('mainProductImage');
+        if (mainImage) {
+          mainImage.src = button.dataset.image;
+        }
+
+        document.querySelectorAll('.gallery-thumb').forEach((thumb) => thumb.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

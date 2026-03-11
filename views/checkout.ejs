@@ -36,7 +36,14 @@
   <nav class="top-nav">
     <a class="nav-brand" href="/">Carmen Boutique</a>
     <div class="nav-links">
-      <a href="/">Shop</a>
+      <div class="nav-dropdown">
+        <a href="/">Shop</a>
+        <div class="nav-submenu">
+          <% categories.forEach((category) => { %>
+            <a href="/?category=<%= encodeURIComponent(category) %>"><%= category %></a>
+          <% }) %>
+        </div>
+      </div>
       <a href="/cart">Cart</a>
     </div>
   </nav>

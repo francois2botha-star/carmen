@@ -16,7 +16,14 @@
   <nav class="top-nav">
     <a class="nav-brand" href="/">Carmen Boutique</a>
     <div class="nav-links">
-      <a href="/">Shop</a>
+      <div class="nav-dropdown">
+        <a href="/">Shop</a>
+        <div class="nav-submenu">
+          <% categories.forEach((category) => { %>
+            <a href="/?category=<%= encodeURIComponent(category) %>"><%= category %></a>
+          <% }) %>
+        </div>
+      </div>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
       <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>

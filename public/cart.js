@@ -1,9 +1,23 @@
 // Cart management utilities
-function addToCart(product) {
+function addToCartFromButton(button, optionSelector) {
+  const product = {
+    id: Number(button.dataset.productId),
+    name: button.dataset.productName || '',
+    price: Number(button.dataset.productPrice || 0),
+    category: button.dataset.productCategory || '',
+    image: button.dataset.productImage || ''
+  };
+
+  return addToCart(product, optionSelector);
+}
+
+function addToCart(product, optionSelector) {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
   // Find selected option
-  const optionSelect = document.querySelector(`[data-product-id="${product.id}"] select`);
+  const optionSelect = optionSelector
+    ? document.querySelector(optionSelector)
+    : document.querySelector(`[data-product-id="${product.id}"] select`);
   if (!optionSelect) {
     alert('Please select an option');
     return;
@@ -35,9 +49,17 @@ function addToCart(product) {
   }
 
   localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartIcon();
   
   // Show feedback
-  const btn = document.querySelector(`[data-product-id="${product.id}"] .add-to-cart-btn`);
+  const btn = optionSelector
+    ? document.querySelector('.product-info-card .wa-button')
+    : document.querySelector(`[data-product-id="${product.id}"] .add-to-cart-btn`);
+
+  if (!btn) {
+    return;
+  }
+
   const originalText = btn.textContent;
   btn.textContent = '✓ Added to cart';
   btn.style.background = 'var(--ok)';
