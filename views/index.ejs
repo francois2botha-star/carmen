@@ -3,76 +3,157 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carmen Boutique</title>
+  <title>Carmen Boutique &mdash; Fashion, Perfumes &amp; Accessories</title>
+  <meta name="description" content="Shop curated womens and mens clothing, shoes, perfumes and accessories. Order on WhatsApp, delivered anywhere in South Africa." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <a href="#catalog">Shop</a>
+      <a href="#how-it-works">How it works</a>
+      <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
   <header class="hero">
-    <h1>Carmen Boutique</h1>
-    <p>Shop clothes, shoes, perfumes, and more.</p>
-    <% if (storefrontSettings.hideOutOfStock) { %>
-      <p class="stock-mode">Showing in-stock products only.</p>
-    <% } %>
-    <form class="catalog-filter" method="GET" action="/">
-      <label for="category">Category</label>
-      <select id="category" name="category" onchange="this.form.submit()">
-        <% categories.forEach((category) => { %>
-          <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= category %></option>
-        <% }) %>
-      </select>
-      <% if (selectedCategory !== 'All') { %>
-        <a class="clear-filter" href="/">Clear filter</a>
-      <% } %>
-    </form>
-    <a class="admin-link" href="/admin">Admin Panel</a>
+    <div class="hero-inner">
+      <span class="hero-eyebrow">New arrivals &bull; Free local shipping</span>
+      <h1>Style that speaks<br /><em>your language</em></h1>
+      <p class="hero-sub">
+        Curated clothing, shoes, perfumes &amp; accessories &mdash; ordered on WhatsApp,
+        delivered straight to your door anywhere in South Africa.
+      </p>
+      <a class="hero-cta" href="#catalog">Shop the collection</a>
+    </div>
   </header>
 
-  <main class="catalog">
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works" id="how-it-works">
+    <span class="section-label">Simple &amp; easy</span>
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-icon">&#128717;</span>
+        <h3>Browse</h3>
+        <p>Explore our curated collection of clothing, shoes, perfumes and accessories. Pick your size and style.</p>
+      </div>
+      <div class="step-divider">&#8594;</div>
+      <div class="step">
+        <span class="step-icon">&#128172;</span>
+        <h3>WhatsApp us</h3>
+        <p>Tap the &ldquo;Order on WhatsApp&rdquo; button on any product. We&rsquo;ll confirm your order and send payment details.</p>
+      </div>
+      <div class="step-divider">&#8594;</div>
+      <div class="step">
+        <span class="step-icon">&#128230;</span>
+        <h3>We deliver</h3>
+        <p>We ship via Pudo or The Courier Guy, straight to your door anywhere in South Africa.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATALOG -->
+  <section class="catalog-section" id="catalog">
+    <div class="catalog-header">
+      <span class="section-label">Our collection</span>
+      <h2>Shop everything</h2>
+      <p class="sub">Filter by category or browse all &mdash; every piece is ready to order on WhatsApp.</p>
+      <% if (storefrontSettings.hideOutOfStock) { %>
+        <span class="stock-mode">&#10003; Showing in-stock items only</span>
+      <% } %>
+      <form class="catalog-filter" method="GET" action="/">
+        <% categories.forEach(function(category) { %>
+          <button
+            type="submit"
+            name="category"
+            value="<%= category %>"
+            class="filter-pill <%= selectedCategory === category ? 'active' : '' %>"
+          ><%= category %></button>
+        <% }); %>
+      </form>
+    </div>
+
     <% if (!products.length) { %>
-      <section class="empty-state">
-        <h2>No products listed yet</h2>
-        <p>Add your first product from the admin panel.</p>
-      </section>
+      <div class="catalog">
+        <div class="empty-state">
+          <h2>Nothing here yet</h2>
+          <p>Try a different category, or check back soon for new arrivals.</p>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="catalog">
+        <% products.forEach(function(product) { %>
+          <article class="product-card">
+            <div class="media-wrap">
+              <% if (product.image_path) { %>
+                <img src="<%= product.image_path %>" alt="<%= product.name %>" loading="lazy" />
+              <% } else { %>
+                <div class="placeholder">No image</div>
+              <% } %>
+              <span class="category-tag"><%= product.gender %></span>
+            </div>
+
+            <div class="product-meta">
+              <h3><%= product.name %></h3>
+              <p class="description"><%= product.description || '' %></p>
+              <p class="price">R <%= Number(product.price).toFixed(2) %></p>
+
+              <div class="options">
+                <% product.optionsArray.forEach(function(option) { %>
+                  <span><%= option.trim() %></span>
+                <% }); %>
+              </div>
+
+              <p class="stock <%= product.in_stock ? 'yes' : 'no' %>">
+                <%= product.in_stock ? '&#10003; In stock' : '&#10007; Out of stock' %>
+              </p>
+
+              <% if (product.in_stock) { %>
+                <a
+                  class="wa-button"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://wa.me/<%= whatsappNumber %>?text=<%= encodeURIComponent(`Hi Carmen! I'd love to order:\n\n*${product.name}*\nPrice: R${Number(product.price).toFixed(2)}\nMy preferred option: [please specify]\n\nCould you confirm availability and payment details? Thank you! 🛍️`) %>"
+                >Order on WhatsApp</a>
+              <% } else { %>
+                <button class="wa-button disabled" disabled>Out of stock</button>
+              <% } %>
+            </div>
+          </article>
+        <% }); %>
+      </div>
     <% } %>
+  </section>
 
-    <% products.forEach((product) => { %>
-      <article class="product-card">
-        <div class="media-wrap">
-          <% if (product.image_path) { %>
-            <img src="<%= product.image_path %>" alt="<%= product.name %>" />
-          <% } else { %>
-            <div class="placeholder">No image</div>
-          <% } %>
-        </div>
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Carmen Boutique</h3>
+        <p>Your one-stop fashion destination &mdash; curated with love and delivered with care across South Africa.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick links</h4>
+        <a href="/">Shop all</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Contact us</a>
+      </div>
+      <div class="footer-wa">
+        <h4>Place an order</h4>
+        <p>Questions? We reply fast. Chat with us directly on WhatsApp.</p>
+        <a class="footer-wa-btn" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Chat with us</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
+  </footer>
 
-        <div class="product-meta">
-          <h2><%= product.name %></h2>
-          <p class="type"><%= product.gender %></p>
-          <p class="price">R <%= Number(product.price).toFixed(2) %></p>
-          <p><%= product.description || 'No description available.' %></p>
-
-          <div class="sizes">
-            <strong>Available options:</strong>
-            <% product.optionsArray.forEach((option) => { %>
-              <span><%= option %></span>
-            <% }) %>
-          </div>
-
-          <p class="stock <%= product.in_stock ? 'yes' : 'no' %>">
-            <%= product.in_stock ? 'In stock' : 'Out of stock' %>
-          </p>
-
-          <a
-            class="wa-button"
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://wa.me/<%= whatsappNumber %>?text=<%= encodeURIComponent(`Hi, I want to order: ${product.name} (R ${Number(product.price).toFixed(2)}), option: [your option], category: ${product.gender}`) %>"
-          >
-            Order on WhatsApp
-          </a>
-        </div>
-      </article>
-    <% }) %>
-  </main>
 </body>
 </html>
