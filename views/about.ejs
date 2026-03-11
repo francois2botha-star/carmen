@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Carmen Boutique</title>
+  <meta name="description" content="Learn about Carmen Boutique — curated fashion, perfumes & accessories delivered across South Africa." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <a href="/">Shop</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero" style="padding: 4rem 2rem 3rem;">
+    <div class="hero-inner">
+      <h1>About Carmen</h1>
+      <p class="hero-sub">Passion, curated pieces, delivered with care.</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main style="max-width: 900px; margin: 0 auto; padding: 3rem 2rem;">
+
+    <!-- STORY -->
+    <section style="margin-bottom: 4rem;">
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.8rem; margin-bottom: 1rem;">Our Story</h2>
+      <p style="font-size: 1.05rem; line-height: 1.8; color: var(--muted); margin-bottom: 1rem;">
+        Carmen Boutique was born from a simple belief: that fashion, fragrance, and style shouldn't be complicated. 
+        We wanted to create a space where you could find everything you love—beautifully curated, genuinely affordable, 
+        and delivered exactly when you need it.
+      </p>
+      <p style="font-size: 1.05rem; line-height: 1.8; color: var(--muted);">
+        Starting with WhatsApp as our core channel, we've built a shopping experience that feels personal, honest, 
+        and hassle-free. No bots. No confusing checkout. Just real humans who love fashion, helping you find your vibe.
+      </p>
+    </section>
+
+    <!-- VALUES -->
+    <section style="margin-bottom: 4rem;">
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.8rem; margin-bottom: 2rem;">Why Carmen?</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+        <div style="background: var(--pink-pale); padding: 1.8rem; border-radius: 14px; border: 1px solid var(--card-border);">
+          <h3 style="color: var(--pink); margin-bottom: 0.5rem; font-size: 1.2rem;">🛍️ Curated</h3>
+          <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6;">Every piece is handpicked. We invest time finding exactly what matters to you.</p>
+        </div>
+        <div style="background: var(--gold-light); padding: 1.8rem; border-radius: 14px; border: 1px solid #E6C96A;">
+          <h3 style="color: var(--ink); margin-bottom: 0.5rem; font-size: 1.2rem;">💬 Connected</h3>
+          <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6;">WhatsApp means we're always just a message away. Quick replies, real conversations.</p>
+        </div>
+        <div style="background: var(--pink-pale); padding: 1.8rem; border-radius: 14px; border: 1px solid var(--card-border);">
+          <h3 style="color: var(--pink); margin-bottom: 0.5rem; font-size: 1.2rem;">📦 Reliable</h3>
+          <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6;">Trusted shipping partners, fast delivery, and peace of mind every time.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section style="margin-bottom: 4rem;">
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.8rem; margin-bottom: 1rem;">What We Offer</h2>
+      <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+        <li style="padding: 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid var(--pink);"><strong>Women's Clothing</strong> — Dresses, tops, trousers, and more</li>
+        <li style="padding: 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid var(--teal);"><strong>Men's Clothing</strong> — Shirts, trousers, blazers, casuals</li>
+        <li style="padding: 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid var(--gold);"><strong>Shoes</strong> — Flats, heels, sneakers, sandals</li>
+        <li style="padding: 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid var(--pink);"><strong>Perfumes</strong> — Eau de parfum, fragrances, body mists</li>
+        <li style="padding: 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid var(--teal);"><strong>Accessories</strong> — Jewelry, scarves, bags, and more</li>
+      </ul>
+    </section>
+
+    <!-- CTA -->
+    <section style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: linear-gradient(135deg, var(--pink-pale), var(--gold-light)); border-radius: 14px;">
+      <h3 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.5rem; margin-bottom: 1rem;">Ready to explore?</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem;">Start shopping or reach out—we'd love to help.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/" style="display: inline-block; background: var(--pink); color: white; padding: 0.8rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; transition: background 0.22s ease;">Shop Now</a>
+        <a href="/contact" style="display: inline-block; background: white; color: var(--pink); padding: 0.8rem 2rem; border: 2px solid var(--pink); border-radius: 999px; text-decoration: none; font-weight: 700; transition: all 0.22s ease;">Get in touch</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Carmen Boutique</h3>
+        <p>Your one-stop fashion destination — curated with love and delivered with care across South Africa.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick links</h4>
+        <a href="/">Shop all</a>
+        <a href="/about">About us</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="footer-wa">
+        <h4>Place an order</h4>
+        <p>Questions? We reply fast. Chat with us directly on WhatsApp.</p>
+        <a class="footer-wa-btn" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Chat with us</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

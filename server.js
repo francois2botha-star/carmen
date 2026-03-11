@@ -193,6 +193,24 @@ app.get('/', async (req, res) => {
   }
 });
 
+app.get('/about', async (req, res) => {
+  try {
+    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
+    return res.render('about', { whatsappNumber });
+  } catch (_error) {
+    return res.status(500).send('Could not load about page.');
+  }
+});
+
+app.get('/contact', async (req, res) => {
+  try {
+    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
+    return res.render('contact', { whatsappNumber });
+  } catch (_error) {
+    return res.status(500).send('Could not load contact page.');
+  }
+});
+
 app.get('/admin', async (_req, res) => {
   try {
     return await renderAdminWithMessage(res, null, null);

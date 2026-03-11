@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Carmen Boutique</title>
+  <meta name="description" content="Get in touch with Carmen Boutique — WhatsApp, social media, or email. We're here to help." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <a href="/">Shop</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero" style="padding: 4rem 2rem 3rem;">
+    <div class="hero-inner">
+      <h1>Get in Touch</h1>
+      <p class="hero-sub">We're here to help with questions, orders, or feedback.</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main style="max-width: 900px; margin: 0 auto; padding: 3rem 2rem;">
+
+    <!-- CONTACT METHODS -->
+    <section style="margin-bottom: 4rem;">
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">Ways to reach us</h2>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <!-- WhatsApp -->
+        <div style="background: var(--pink-pale); padding: 2rem; border-radius: 14px; border: 1px solid var(--card-border); text-align: center;">
+          <span style="font-size: 2.4rem; display: block; margin-bottom: 1rem;">💬</span>
+          <h3 style="color: var(--pink); margin-bottom: 0.5rem; font-size: 1.3rem;">WhatsApp</h3>
+          <p style="color: var(--muted); margin-bottom: 1.2rem; font-size: 0.95rem; line-height: 1.6;">
+            The fastest way to reach us. We reply within minutes during business hours.
+          </p>
+          <a href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer" 
+             style="display: inline-block; background: var(--pink); color: white; padding: 0.7rem 1.8rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+            Start chat
+          </a>
+        </div>
+
+        <!-- Email -->
+        <div style="background: var(--gold-light); padding: 2rem; border-radius: 14px; border: 1px solid #E6C96A; text-align: center;">
+          <span style="font-size: 2.4rem; display: block; margin-bottom: 1rem;">✉️</span>
+          <h3 style="color: var(--ink); margin-bottom: 0.5rem; font-size: 1.3rem;">Email</h3>
+          <p style="color: var(--muted); margin-bottom: 0.8rem; font-size: 0.95rem; line-height: 1.6;">
+            For business inquiries or detailed questions:
+          </p>
+          <p style="margin-bottom: 1.2rem; font-weight: 600; color: var(--ink);">hello@carmen-boutique.co.za</p>
+          <a href="mailto:hello@carmen-boutique.co.za" 
+             style="display: inline-block; background: var(--ink); color: white; padding: 0.7rem 1.8rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+            Send email
+          </a>
+        </div>
+
+        <!-- Social -->
+        <div style="background: var(--pink-pale); padding: 2rem; border-radius: 14px; border: 1px solid var(--card-border); text-align: center;">
+          <span style="font-size: 2.4rem; display: block; margin-bottom: 1rem;">📱</span>
+          <h3 style="color: var(--pink); margin-bottom: 0.5rem; font-size: 1.3rem;">Social Media</h3>
+          <p style="color: var(--muted); margin-bottom: 1.2rem; font-size: 0.95rem; line-height: 1.6;">
+            Follow for new arrivals, style tips, and exclusive updates.
+          </p>
+          <div style="display: flex; gap: 0.8rem; justify-content: center;">
+            <a href="#" style="display: inline-block; width: 40px; height: 40px; background: var(--pink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700;">IG</a>
+            <a href="#" style="display: inline-block; width: 40px; height: 40px; background: var(--pink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700;">FB</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section style="margin-bottom: 4rem;">
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.8rem; margin-bottom: 2rem;">Frequently Asked Questions</h2>
+      
+      <div style="display: grid; gap: 1.5rem;">
+        <details style="background: var(--cream); padding: 1.3rem; border-radius: 8px; border-left: 4px solid var(--pink); cursor: pointer;">
+          <summary style="font-weight: 700; color: var(--ink); font-size: 1.05rem; cursor: pointer;">How long does delivery take?</summary>
+          <p style="margin-top: 0.8rem; color: var(--muted); line-height: 1.6;">
+            We ship via Pudo or The Courier Guy. Delivery typically takes 2–5 business days depending on your location. You'll get tracking details once your order ships.
+          </p>
+        </details>
+
+        <details style="background: var(--cream); padding: 1.3rem; border-radius: 8px; border-left: 4px solid var(--teal); cursor: pointer;">
+          <summary style="font-weight: 700; color: var(--ink); font-size: 1.05rem; cursor: pointer;">Do you offer returns or exchanges?</summary>
+          <p style="margin-top: 0.8rem; color: var(--muted); line-height: 1.6;">
+            Yes! If an item arrives damaged or doesn't fit, we'll arrange an exchange or refund. Chat us on WhatsApp with photos and we'll sort it out.
+          </p>
+        </details>
+
+        <details style="background: var(--cream); padding: 1.3rem; border-radius: 8px; border-left: 4px solid var(--gold); cursor: pointer;">
+          <summary style="font-weight: 700; color: var(--ink); font-size: 1.05rem; cursor: pointer;">Can I order outside South Africa?</summary>
+          <p style="margin-top: 0.8rem; color: var(--muted); line-height: 1.6;">
+            Currently we ship within South Africa only. For international orders, reach out and we can discuss options.
+          </p>
+        </details>
+
+        <details style="background: var(--cream); padding: 1.3rem; border-radius: 8px; border-left: 4px solid var(--pink); cursor: pointer;">
+          <summary style="font-weight: 700; color: var(--ink); font-size: 1.05rem; cursor: pointer;">How do I know my payment is safe?</summary>
+          <p style="margin-top: 0.8rem; color: var(--muted); line-height: 1.6;">
+            We accept bank transfers and work with Pudo/Courier Guy's secure payment systems. Never share card details on WhatsApp—we'll send secure payment links.
+          </p>
+        </details>
+
+        <details style="background: var(--cream); padding: 1.3rem; border-radius: 8px; border-left: 4px solid var(--teal); cursor: pointer;">
+          <summary style="font-weight: 700; color: var(--ink); font-size: 1.05rem; cursor: pointer;">What's your return policy?</summary>
+          <p style="margin-top: 0.8rem; color: var(--muted); line-height: 1.6;">
+            You have 7 days from delivery to request a return or exchange. Items must be unused and in original packaging. Chat us to initiate the process.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: linear-gradient(135deg, var(--pink-pale), var(--gold-light)); border-radius: 14px;">
+      <h3 style="font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.5rem; margin-bottom: 1rem;">Still have questions?</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem;">Reach out on WhatsApp—we're always happy to chat.</p>
+      <a href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer"
+         style="display: inline-block; background: var(--pink); color: white; padding: 0.8rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; transition: background 0.22s ease;">
+        Message us on WhatsApp
+      </a>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Carmen Boutique</h3>
+        <p>Your one-stop fashion destination — curated with love and delivered with care across South Africa.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick links</h4>
+        <a href="/">Shop all</a>
+        <a href="/about">About us</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="footer-wa">
+        <h4>Place an order</h4>
+        <p>Questions? We reply fast. Chat with us directly on WhatsApp.</p>
+        <a class="footer-wa-btn" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Chat with us</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
