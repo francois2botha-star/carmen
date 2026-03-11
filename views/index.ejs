@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carmen Boutique</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <h1>Carmen Boutique</h1>
+    <p>Shop clothes, shoes, perfumes, and more.</p>
+    <% if (storefrontSettings.hideOutOfStock) { %>
+      <p class="stock-mode">Showing in-stock products only.</p>
+    <% } %>
+    <form class="catalog-filter" method="GET" action="/">
+      <label for="category">Category</label>
+      <select id="category" name="category" onchange="this.form.submit()">
+        <% categories.forEach((category) => { %>
+          <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= category %></option>
+        <% }) %>
+      </select>
+      <% if (selectedCategory !== 'All') { %>
+        <a class="clear-filter" href="/">Clear filter</a>
+      <% } %>
+    </form>
+    <a class="admin-link" href="/admin">Admin Panel</a>
+  </header>
+
+  <main class="catalog">
+    <% if (!products.length) { %>
+      <section class="empty-state">
+        <h2>No products listed yet</h2>
+        <p>Add your first product from the admin panel.</p>
+      </section>
+    <% } %>
+
+    <% products.forEach((product) => { %>
+      <article class="product-card">
+        <div class="media-wrap">
+          <% if (product.image_path) { %>
+            <img src="<%= product.image_path %>" alt="<%= product.name %>" />
+          <% } else { %>
+            <div class="placeholder">No image</div>
+          <% } %>
+        </div>
+
+        <div class="product-meta">
+          <h2><%= product.name %></h2>
+          <p class="type"><%= product.gender %></p>
+          <p class="price">R <%= Number(product.price).toFixed(2) %></p>
+          <p><%= product.description || 'No description available.' %></p>
+
+          <div class="sizes">
+            <strong>Available options:</strong>
+            <% product.optionsArray.forEach((option) => { %>
+              <span><%= option %></span>
+            <% }) %>
+          </div>
+
+          <p class="stock <%= product.in_stock ? 'yes' : 'no' %>">
+            <%= product.in_stock ? 'In stock' : 'Out of stock' %>
+          </p>
+
+          <a
+            class="wa-button"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://wa.me/<%= whatsappNumber %>?text=<%= encodeURIComponent(`Hi, I want to order: ${product.name} (R ${Number(product.price).toFixed(2)}), option: [your option], category: ${product.gender}`) %>"
+          >
+            Order on WhatsApp
+          </a>
+        </div>
+      </article>
+    <% }) %>
+  </main>
+</body>
+</html>

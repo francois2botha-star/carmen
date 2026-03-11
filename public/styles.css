@@ -1,0 +1,272 @@
+:root {
+  --bg: #f0efe7;
+  --card: #fffaf0;
+  --ink: #1f2933;
+  --accent: #c04b2f;
+  --accent-dark: #98351f;
+  --muted: #6b7280;
+  --ok: #0f766e;
+  --bad: #b91c1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at top left, #efe8d8 0%, var(--bg) 45%, #e4dac7 100%);
+}
+
+.hero {
+  padding: 3rem 1rem 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.hero p {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
+.stock-mode {
+  margin-top: 0.4rem;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.catalog-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.catalog-filter select {
+  min-width: 170px;
+}
+
+.clear-filter {
+  color: var(--accent-dark);
+  font-size: 0.9rem;
+}
+
+.admin-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: white;
+  background: var(--accent);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+}
+
+.catalog {
+  width: min(1100px, 92vw);
+  margin: 0 auto 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+.product-card,
+.admin-card {
+  background: var(--card);
+  border: 1px solid #e5d6bc;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(31, 41, 51, 0.08);
+}
+
+.media-wrap {
+  background: #f8f3e8;
+  aspect-ratio: 1/1;
+}
+
+.media-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--muted);
+}
+
+.product-meta {
+  padding: 1rem;
+}
+
+.type {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.price {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.sizes span {
+  background: #f4e6c8;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.stock.yes {
+  color: var(--ok);
+}
+
+.stock.no {
+  color: var(--bad);
+}
+
+.wa-button,
+button {
+  display: inline-block;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.6rem 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button:hover,
+.wa-button:hover,
+.admin-link:hover {
+  background: var(--accent-dark);
+}
+
+.admin-layout {
+  width: min(1100px, 92vw);
+  margin: 0 auto 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.admin-card {
+  padding: 1rem;
+}
+
+.admin-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-form label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.95rem;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #d3c4a6;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font: inherit;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-line input {
+  width: auto;
+}
+
+.admin-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-item {
+  border: 1px solid #eadfc7;
+  border-radius: 10px;
+  padding: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.admin-item h3 {
+  margin: 0;
+}
+
+.delete-form {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 160px;
+}
+
+.edit-form {
+  border: 1px solid #eadfc7;
+  border-radius: 8px;
+  padding: 0.6rem;
+  display: grid;
+  gap: 0.45rem;
+  min-width: 260px;
+}
+
+.custom-category-field.hidden,
+.hidden {
+  display: none;
+}
+
+.danger {
+  background: var(--bad);
+}
+
+.message {
+  padding: 0.6rem;
+  border-radius: 8px;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.message.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 2rem;
+  text-align: center;
+  background: var(--card);
+  border: 1px dashed #d5bfa0;
+  border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+}
