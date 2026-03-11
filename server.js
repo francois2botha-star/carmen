@@ -297,7 +297,8 @@ app.post('/admin/products', upload.single('image'), async (req, res) => {
 
     return await renderAdminWithMessage(res, null, 'Product added successfully.');
   } catch (_error) {
-    return res.status(500).send('Failed to save product.');
+     console.error('Error creating product:', _error);
+     return await renderAdminWithMessage(res, `Error: ${_error.message || 'Failed to save product.'}`, null);
   }
 });
 
