@@ -193,6 +193,33 @@ app.get('/', async (req, res) => {
   }
 });
 
+app.get('/cart', async (req, res) => {
+  try {
+    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
+    return res.render('cart', { whatsappNumber });
+  } catch (_error) {
+    return res.status(500).send('Could not load cart.');
+  }
+});
+
+app.get('/profile', async (req, res) => {
+  try {
+    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
+    return res.render('profile', { whatsappNumber });
+  } catch (_error) {
+    return res.status(500).send('Could not load profile page.');
+  }
+});
+
+app.get('/checkout', async (req, res) => {
+  try {
+    const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);
+    return res.render('checkout', { whatsappNumber });
+  } catch (_error) {
+    return res.status(500).send('Could not load checkout page.');
+  }
+});
+
 app.get('/about', async (req, res) => {
   try {
     const whatsappNumber = normalizePhone(WHATSAPP_NUMBER);

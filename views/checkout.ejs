@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout &mdash; Carmen Boutique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .checkout-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    .checkout-section { background: white; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
+    .section-title { font-family: 'Playfair Display', serif; color: var(--pink); font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem; }
+    .section-title .step { width: 32px; height: 32px; background: var(--pink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem; }
+    .info-item { display: grid; gap: 0.3rem; }
+    .info-item label { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+    .info-item .value { font-size: 0.95rem; color: var(--ink); }
+    .order-items { border-top: 1px solid var(--card-border); padding-top: 1rem; }
+    .order-item { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; }
+    .order-item .item-name { flex: 1; color: var(--ink); }
+    .order-item .item-price { color: var(--pink); font-weight: 700; }
+    .order-summary { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; padding: 1rem 0; border-top: 2px solid var(--pink-light); color: var(--pink); }
+    .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .button-group button, .button-group a { flex: 1; padding: 0.9rem; border: none; border-radius: 8px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; font-size: 0.95rem; transition: all 0.22s ease; }
+    .btn-order { background: var(--pink); color: white; }
+    .btn-order:hover { background: var(--pink-dark); }
+    .btn-edit { background: transparent; color: var(--pink); border: 2px solid var(--pink); }
+    .btn-edit:hover { background: var(--pink-pale); }
+    .warning { background: #FFF3CD; border-left: 4px solid #FFC107; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; color: #856404; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <a href="/">Shop</a>
+      <a href="/cart">Cart</a>
+    </div>
+  </nav>
+
+  <header class="hero" style="padding: 3rem 2rem;">
+    <div class="hero-inner">
+      <h1>Order Review</h1>
+      <p class="hero-sub">Review your order and confirm to place it on WhatsApp.</p>
+    </div>
+  </header>
+
+  <main style="margin: 2rem 0;">
+    <div class="checkout-container" id="checkoutContainer">
+      <!-- Populated by JavaScript -->
+    </div>
+  </main>
+
+  <footer class="site-footer" style="margin-top: 4rem;">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Carmen Boutique</h3>
+        <p>Your one-stop fashion destination — curated with love and delivered with care across South Africa.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick links</h4>
+        <a href="/">Shop all</a>
+        <a href="/about">About us</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="footer-wa">
+        <h4>Place an order</h4>
+        <p>Questions? We reply fast. Chat with us directly on WhatsApp.</p>
+        <a class="footer-wa-btn" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Chat with us</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
+  </footer>
+
+  <script>
+    const whatsappNumber = '<%= whatsappNumber %>';
+
+    function formatCheckout() {
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const container = document.getElementById('checkoutContainer');
+
+      if (!profile.firstName || cart.length === 0) {
+        container.innerHTML = `
+          <div class="checkout-section" style="text-align: center;">
+            <h2 style="color: var(--bad); margin-bottom: 1rem;">Missing Information</h2>
+            <p>Your cart or profile is incomplete. Please go back and complete your order.</p>
+            <a href="/cart" style="display: inline-block; background: var(--pink); color: white; padding: 0.8rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; margin-top: 1rem;">← Back to Cart</a>
+          </div>
+        `;
+        return;
+      }
+
+      let total = 0;
+      const itemsHtml = cart.map(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        return `
+          <div class="order-item">
+            <div class="item-name">${item.name} (${item.option}) × ${item.quantity}</div>
+            <div class="item-price">R ${subtotal.toFixed(2)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const profileHtml = `
+        <div class="checkout-section">
+          <h2 class="section-title"><span class="step">1</span> Your Details</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Name</label>
+              <div class="value">${profile.firstName} ${profile.lastName}</div>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <div class="value">${profile.email}</div>
+            </div>
+            <div class="info-item">
+              <label>Phone</label>
+              <div class="value">${profile.phone}</div>
+            </div>
+            <div class="info-item">
+              <label>Alt Phone</label>
+              <div class="value">${profile.altPhone || '—'}</div>
+            </div>
+            <div class="info-item">
+              <label>Address</label>
+              <div class="value">${profile.address}</div>
+            </div>
+            <div class="info-item">
+              <label>City</label>
+              <div class="value">${profile.city}, ${profile.province}</div>
+            </div>
+            <div class="info-item">
+              <label>Postal Code</label>
+              <div class="value">${profile.postalCode}</div>
+            </div>
+          </div>
+          <div class="button-group">
+            <a class="btn-edit" href="/profile">✎ Edit Details</a>
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <h2 class="section-title"><span class="step">2</span> Your Order</h2>
+          <div class="order-items">
+            ${itemsHtml}
+          </div>
+          <div class="order-summary">
+            <span>Total to pay:</span>
+            <span>R ${total.toFixed(2)}</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--muted); margin-top: 1rem; text-align: center;">Shipping cost will be confirmed by Carmen after order placement.</p>
+        </div>
+
+        <div class="checkout-section">
+          <div class="warning">
+            <strong>⚠️ How it works:</strong> We'll send you a WhatsApp message with payment details. Payment must be completed within 24 hours to confirm your order.
+          </div>
+          <div class="button-group">
+            <button class="btn-order" onclick="placeOrder()">Place Order on WhatsApp →</button>
+            <a class="btn-edit" href="/cart">← Back to Cart</a>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = profileHtml;
+    }
+
+    function placeOrder() {
+      const profile = JSON.parse(localStorage.getItem('userProfile'));
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+      let orderDetails = "I'd like to place an order for Carmen Boutique:\n\n";
+      orderDetails += "*CUSTOMER DETAILS:*\n";
+      orderDetails += `Name: ${profile.firstName} ${profile.lastName}\n`;
+      orderDetails += `Email: ${profile.email}\n`;
+      orderDetails += `Phone: ${profile.phone}\n`;
+      if (profile.altPhone) orderDetails += `Alt Phone: ${profile.altPhone}\n`;
+      orderDetails += `\n*DELIVERY ADDRESS:*\n`;
+      orderDetails += `${profile.address}\n`;
+      orderDetails += `${profile.city}, ${profile.province} ${profile.postalCode}\n`;
+      
+      orderDetails += `\n*ITEMS ORDERED:*\n`;
+      let total = 0;
+      cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        orderDetails += `• ${item.name}\n  Option: ${item.option}\n  Quantity: ${item.quantity}\n  Price: R ${subtotal.toFixed(2)}\n`;
+      });
+
+      orderDetails += `\n*ORDER TOTAL:*\nR ${total.toFixed(2)} (excluding shipping)\n`;
+      orderDetails += `\nPlease confirm availability and send payment details. Thank you! 🛍️`;
+
+      const waLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderDetails)}`;
+      
+      // Clear cart and profile after placing order
+      localStorage.removeItem('cart');
+      localStorage.removeItem('userProfile');
+      
+      window.location.href = waLink;
+    }
+
+    formatCheckout();
+  </script>
+
+</body>
+</html>

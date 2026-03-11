@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Cart &mdash; Carmen Boutique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .cart-container { max-width: 1000px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    @media (max-width: 768px) { .cart-container { grid-template-columns: 1fr; } }
+    .cart-items { background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
+    .cart-item { display: grid; grid-template-columns: 80px 1fr auto; gap: 1.5rem; padding: 1.2rem; border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 1rem; align-items: start; }
+    .cart-item img { width: 80px; height: 100px; object-fit: cover; border-radius: 8px; }
+    .item-details h4 { font-family: 'Playfair Display', serif; margin-bottom: 0.3rem; color: var(--ink); }
+    .item-details p { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .item-price { font-weight: 700; color: var(--pink); margin-top: 0.5rem; }
+    .item-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    .item-actions button { padding: 0.4rem 0.8rem; border: none; background: var(--bad); color: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    .empty-cart { text-align: center; padding: 3rem 2rem; }
+    .empty-cart h2 { font-family: 'Playfair Display', serif; color: var(--pink-dark); margin-bottom: 1rem; }
+    .empty-cart a { display: inline-block; background: var(--pink); color: white; padding: 0.8rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; margin-top: 1rem; }
+    .order-summary { background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(216,27,96,0.12); height: fit-content; }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.95rem; }
+    .summary-line.bold { font-weight: 700; border-top: 2px solid var(--card-border); padding-top: 0.8rem; font-size: 1.1rem; color: var(--pink); }
+    .action-buttons { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; }
+    .action-buttons a, .action-buttons button { padding: 0.8rem; border: none; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; cursor: pointer; transition: all 0.22s ease; font-size: 0.9rem; }
+    .btn-checkout { background: var(--pink); color: white; }
+    .btn-checkout:hover { background: var(--pink-dark); }
+    .btn-continue { background: transparent; color: var(--pink); border: 2px solid var(--pink); }
+    .btn-continue:hover { background: var(--pink-pale); }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">Carmen Boutique</a>
+    <div class="nav-links">
+      <a href="/">Shop</a>
+      <a href="/cart">Cart</a>
+    </div>
+  </nav>
+
+  <header class="hero" style="padding: 3rem 2rem;">
+    <div class="hero-inner">
+      <h1>Your Cart</h1>
+      <p class="hero-sub">Review your items before checkout.</p>
+    </div>
+  </header>
+
+  <main style="margin: 2rem 0; padding: 2rem;">
+    <div class="cart-container" id="cartContainer">
+      <!-- Populated by JavaScript -->
+    </div>
+  </main>
+
+  <footer class="site-footer" style="margin-top: 4rem;">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Carmen Boutique</h3>
+        <p>Your one-stop fashion destination — curated with love and delivered with care across South Africa.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick links</h4>
+        <a href="/">Shop all</a>
+        <a href="/about">About us</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="footer-wa">
+        <h4>Place an order</h4>
+        <p>Questions? We reply fast. Chat with us directly on WhatsApp.</p>
+        <a class="footer-wa-btn" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">Chat with us</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
+  </footer>
+
+  <script>
+    const whatsappNumber = '<%= whatsappNumber %>';
+
+    function renderCart() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const container = document.getElementById('cartContainer');
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1;">
+            <div class="empty-cart">
+              <h2>Your cart is empty</h2>
+              <p>Start shopping to add items to your cart.</p>
+              <a href="/">← Back to Shop</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      let total = 0;
+      const itemsHtml = cart.map((item, idx) => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        return `
+          <div class="cart-item">
+            <img src="${item.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%22100%22%3E%3Crect fill=%22%23f0f0f0%22 width=%2280%22 height=%22100%22/%3E%3C/svg%3E'}" alt="${item.name}" />
+            <div class="item-details">
+              <h4>${item.name}</h4>
+              <p><strong>Category:</strong> ${item.category}</p>
+              <p><strong>Option:</strong> ${item.option}</p>
+              <p><strong>Quantity:</strong> ${item.quantity}</p>
+              <p class="item-price">R ${item.price.toFixed(2)} × ${item.quantity} = R ${subtotal.toFixed(2)}</p>
+            </div>
+            <div class="item-actions">
+              <button onclick="removeItem(${idx})">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="cart-items">
+          ${itemsHtml}
+        </div>
+        <div class="order-summary">
+          <div class="summary-line">
+            <span>Subtotal:</span>
+            <span>R ${total.toFixed(2)}</span>
+          </div>
+          <div class="summary-line">
+            <span>Shipping:</span>
+            <span>TBD by Carmen</span>
+          </div>
+          <div class="summary-line bold">
+            <span>Total:</span>
+            <span>R ${total.toFixed(2)}</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn-checkout" onclick="goToProfile()">Proceed to Checkout</button>
+            <a class="btn-continue" href="/">← Continue Shopping</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function removeItem(idx) {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      cart.splice(idx, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function goToProfile() {
+      window.location.href = '/profile';
+    }
+
+    renderCart();
+  </script>
+
+</body>
+</html>
