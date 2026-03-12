@@ -34,7 +34,7 @@
         <% if (product.galleryImages.length) { %>
           <img id="mainProductImage" src="<%= product.galleryImages[0] %>" alt="<%= product.name %>" />
         <% } else { %>
-          <div class="placeholder" style="min-height: 460px;">No image</div>
+          <div class="placeholder" style="min-height: min(460px, 65vh);">No image</div>
         <% } %>
       </div>
       <% if (product.galleryImages.length > 1) { %>
@@ -52,11 +52,11 @@
       <span class="category-tag" style="position: static; display:inline-block; margin-bottom: 0.7rem;"><%= product.gender %></span>
       <h1><%= product.name %></h1>
       <p class="price">R <%= Number(product.price).toFixed(2) %></p>
-      <p style="color: var(--muted); margin-bottom: 1rem;"><%= product.description || '' %></p>
+      <p class="product-description"><%= product.description || '' %></p>
 
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem;">Select option:</label>
-        <select id="productOptionSelect" style="width: 100%; border: 1.5px solid var(--card-border); border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; color: var(--ink); background: white;">
+      <div class="product-option-group">
+        <label class="product-option-label">Select option:</label>
+        <select id="productOptionSelect" class="product-option-select">
           <option value="">-- Choose size/variant --</option>
           <% product.optionsArray.forEach((option) => { %>
             <option value="<%= option %>"><%= option %></option>

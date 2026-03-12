@@ -26,9 +26,9 @@
       </div>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
-      <a href="/cart" style="position: relative;">
+      <a href="/cart" class="cart-link">
         🛒 Cart
-        <span id="cart-badge" style="position: absolute; top: -8px; right: -12px; background: var(--pink); color: white; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; display: none;"></span>
+        <span id="cart-badge" class="cart-badge"></span>
       </a>
       <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
     </div>
@@ -113,13 +113,13 @@
             </div>
 
             <div class="product-meta">
-              <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
+              <h3><a href="/products/<%= product.id %>" class="product-name-link"><%= product.name %></a></h3>
               <p class="description"><%= product.description || '' %></p>
               <p class="price">R <%= Number(product.price).toFixed(2) %></p>
 
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem;">Select option:</label>
-                <select style="width: 100%; border: 1.5px solid var(--card-border); border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; color: var(--ink); background: white;">
+              <div class="product-option-group">
+                <label class="product-option-label">Select option:</label>
+                <select class="product-option-select">
                   <option value="">-- Choose size/variant --</option>
                   <% product.optionsArray.forEach(function(option) { %>
                     <option value="<%= option.trim() %>"><%= option.trim() %></option>
@@ -134,7 +134,6 @@
               <% if (product.in_stock) { %>
                 <button
                   class="wa-button add-to-cart-btn"
-                  style="cursor: pointer;"
                   data-product-id="<%= product.id %>"
                   data-product-name="<%= product.name %>"
                   data-product-price="<%= Number(product.price) %>"

@@ -9,26 +9,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .checkout-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-    .checkout-section { background: white; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
-    .section-title { font-family: 'Playfair Display', serif; color: var(--pink); font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem; }
-    .section-title .step { width: 32px; height: 32px; background: var(--pink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem; }
-    .info-item { display: grid; gap: 0.3rem; }
-    .info-item label { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-    .info-item .value { font-size: 0.95rem; color: var(--ink); }
-    .order-items { border-top: 1px solid var(--card-border); padding-top: 1rem; }
-    .order-item { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; }
+    .checkout-container { max-width: 900px; margin: 0 auto; padding: 1rem; }
+    .checkout-section { background: white; border-radius: 14px; padding: 1.1rem; margin-bottom: 1rem; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
+    .section-title { font-family: 'Playfair Display', serif; color: var(--pink); font-size: clamp(1.1rem, 3vw, 1.3rem); margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.65rem; }
+    .section-title .step { width: 30px; height: 30px; min-height: 30px; background: var(--pink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.82rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.8rem; }
+    .info-item { display: grid; gap: 0.28rem; }
+    .info-item label { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+    .info-item .value { font-size: 0.9rem; color: var(--ink); }
+    .order-items { border-top: 1px solid var(--card-border); padding-top: 0.8rem; }
+    .order-item { display: flex; justify-content: space-between; gap: 0.7rem; padding: 0.5rem 0; font-size: 0.88rem; }
     .order-item .item-name { flex: 1; color: var(--ink); }
-    .order-item .item-price { color: var(--pink); font-weight: 700; }
-    .order-summary { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; padding: 1rem 0; border-top: 2px solid var(--pink-light); color: var(--pink); }
-    .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
-    .button-group button, .button-group a { flex: 1; padding: 0.9rem; border: none; border-radius: 8px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; font-size: 0.95rem; transition: all 0.22s ease; }
+    .order-item .item-price { color: var(--pink); font-weight: 700; white-space: nowrap; }
+    .order-summary { display: flex; justify-content: space-between; font-size: 0.98rem; font-weight: 700; padding: 0.85rem 0; border-top: 2px solid var(--pink-light); color: var(--pink); }
+    .button-group { display: flex; gap: 0.8rem; margin-top: 1rem; }
+    .button-group button, .button-group a { flex: 1; padding: 0.78rem; border: none; border-radius: 8px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; font-size: 0.9rem; transition: all 0.22s ease; }
     .btn-order { background: var(--pink); color: white; }
     .btn-order:hover { background: var(--pink-dark); }
     .btn-edit { background: transparent; color: var(--pink); border: 2px solid var(--pink); }
     .btn-edit:hover { background: var(--pink-pale); }
-    .warning { background: #FFF3CD; border-left: 4px solid #FFC107; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; color: #856404; font-size: 0.9rem; }
+    .warning { background: #FFF3CD; border-left: 4px solid #FFC107; padding: 0.9rem; border-radius: 8px; margin-bottom: 0.9rem; color: #856404; font-size: 0.86rem; }
+    @media (max-width: 640px) {
+      .checkout-container { padding: 0.7rem; }
+      .info-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .button-group { flex-direction: column; }
+      .button-group button, .button-group a { width: 100%; }
+      .order-item { font-size: 0.84rem; }
+    }
   </style>
 </head>
 <body>
@@ -48,20 +55,20 @@
     </div>
   </nav>
 
-  <header class="hero" style="padding: 3rem 2rem;">
+  <header class="hero hero-compact">
     <div class="hero-inner">
       <h1>Order Review</h1>
       <p class="hero-sub">Review your order and confirm to place it on WhatsApp.</p>
     </div>
   </header>
 
-  <main style="margin: 2rem 0;">
+  <main class="page-wrap-tight">
     <div class="checkout-container" id="checkoutContainer">
       <!-- Populated by JavaScript -->
     </div>
   </main>
 
-  <footer class="site-footer" style="margin-top: 4rem;">
+  <footer class="site-footer footer-spaced">
     <div class="footer-inner">
       <div class="footer-brand">
         <h3>Carmen Boutique</h3>

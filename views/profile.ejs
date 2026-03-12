@@ -9,21 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .profile-container { max-width: 600px; margin: 0 auto; padding: 2rem; background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
-    .form-section { margin-bottom: 2rem; }
-    .form-section h3 { font-family: 'Playfair Display', serif; color: var(--pink); margin-bottom: 1rem; font-size: 1.2rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .profile-container { max-width: 640px; margin: 0 auto; padding: 1.25rem; background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(216,27,96,0.12); }
+    .form-section { margin-bottom: 1.35rem; }
+    .form-section h3 { font-family: 'Playfair Display', serif; color: var(--pink); margin-bottom: 0.8rem; font-size: clamp(1rem, 3vw, 1.2rem); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.8rem; }
     .form-row.full { grid-template-columns: 1fr; }
-    .form-group { display: grid; gap: 0.3rem; }
-    .form-group label { font-size: 0.9rem; font-weight: 500; color: var(--ink); }
-    .form-group input, .form-group textarea { width: 100%; border: 1.5px solid var(--card-border); border-radius: 8px; padding: 0.65rem 0.85rem; font: inherit; }
+    .form-group { display: grid; gap: 0.28rem; }
+    .form-group label { font-size: 0.86rem; font-weight: 500; color: var(--ink); }
+    .form-group input, .form-group textarea { width: 100%; border: 1.5px solid var(--card-border); border-radius: 8px; padding: 0.62rem 0.8rem; font: inherit; font-size: 0.9rem; }
     .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(216,27,96,0.08); }
-    .button-group { display: flex; gap: 1rem; margin-top: 2rem; }
-    .button-group button { flex: 1; padding: 0.8rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.22s ease; }
+    .button-group { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+    .button-group button { flex: 1; padding: 0.75rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: all 0.22s ease; }
     .btn-primary { background: var(--pink); color: white; }
     .btn-primary:hover { background: var(--pink-dark); }
     .btn-secondary { background: transparent; color: var(--pink); border: 2px solid var(--pink); }
     .btn-secondary:hover { background: var(--pink-pale); }
+    @media (max-width: 640px) {
+      .profile-container { padding: 1rem; }
+      .form-row { grid-template-columns: 1fr; gap: 0.65rem; }
+      .button-group { flex-direction: column; }
+      .button-group button { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -43,14 +49,14 @@
     </div>
   </nav>
 
-  <header class="hero" style="padding: 3rem 2rem;">
+  <header class="hero hero-compact">
     <div class="hero-inner">
       <h1>Your Profile</h1>
       <p class="hero-sub">We need your details to process your order.</p>
     </div>
   </header>
 
-  <main style="max-width: 900px; margin: 3rem auto; padding: 0 2rem;">
+  <main class="page-wrap">
     <div class="profile-container">
       <form id="profileForm">
         <div class="form-section">
