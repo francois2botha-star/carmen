@@ -10,6 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || '!Cowbell@abc!';
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27799692789';
+const KEEP_ALIVE_ENABLED = String(process.env.KEEP_ALIVE_ENABLED || 'false').toLowerCase() === 'true';
+const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || '';
+const KEEP_ALIVE_INTERVAL_MINUTES = Number(process.env.KEEP_ALIVE_INTERVAL_MINUTES) || 10;
 const DEFAULT_CATEGORIES = ['Mens clothing', 'Womens clothing', 'Shoes', 'Perfume', 'Accessories'];
 const ORDER_STATUSES = ['Pending', 'Payment received', 'Order shipped', 'Completed'];
 
@@ -49,6 +52,45 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+function startKeepAlivePinger() {
+  if (!KEEP_ALIVE_ENABLED) {
+    return;
+  }
+
+  if (!KEEP_ALIVE_URL) {
+    console.warn('Keep-alive is enabled but KEEP_ALIVE_URL is not set. Skipping keep-alive pinger.');
+    return;
+  }
+
+  const safeIntervalMinutes = Math.max(1, KEEP_ALIVE_INTERVAL_MINUTES);
+  const intervalMs = safeIntervalMinutes * 60 * 1000;
+
+  const ping = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const response = await fetch(KEEP_ALIVE_URL, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'carmen-keep-alive/1.0'
+        }
+      });
+      console.log(`Keep-alive ping -> ${KEEP_ALIVE_URL} [${response.status}]`);
+    } catch (error) {
+      console.warn(`Keep-alive ping failed: ${error.message}`);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  ping();
+  setInterval(ping, intervalMs);
+
+  console.log(`Keep-alive pinger started: every ${safeIntervalMinutes} minute(s) -> ${KEEP_ALIVE_URL}`);
+}
 
 function parseOptions(rawOptions) {
   return (rawOptions || '')
@@ -395,6 +437,10 @@ app.get('/contact', async (req, res) => {
   }
 });
 
+app.get('/health', (_req, res) => {
+  return res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
+});
+
 app.get('/admin/login', (_req, res) => {
   return res.render('admin-login', { error: null });
 });
@@ -738,6 +784,7 @@ initDatabase()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Store app running at http://localhost:${PORT}`);
+      startKeepAlivePinger();
     });
   })
   .catch((err) => {

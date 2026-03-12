@@ -54,3 +54,17 @@ Simple ecommerce-style catalog for selling clothes, shoes, perfumes, and more wh
 - Main sales channel remains WhatsApp.
 - Delivery can still be managed manually via Pudo / The Courier Guy.
 - Free Render services can sleep when inactive, so first request may be slow.
+
+## Keep Render service awake (optional)
+
+This app includes an optional keep-alive pinger and a health endpoint.
+
+- Health endpoint: `/health`
+- Env vars:
+   - `KEEP_ALIVE_ENABLED=true`
+   - `KEEP_ALIVE_URL=https://your-service-name.onrender.com/health`
+   - `KEEP_ALIVE_INTERVAL_MINUTES=10`
+
+Recommended:
+- Set interval to `10` (or any value under 15 minutes).
+- Keep this disabled in local dev.
