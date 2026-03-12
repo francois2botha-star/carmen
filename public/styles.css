@@ -732,6 +732,43 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--p
 textarea { resize: vertical; min-height: 80px; }
 .checkbox-line { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; cursor: pointer; }
 .checkbox-line input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--pink); }
+.image-upload-group {
+  display: grid;
+  gap: 0.5rem;
+}
+.image-upload-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.image-upload-list {
+  display: grid;
+  gap: 0.5rem;
+}
+.image-upload-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 48px;
+  gap: 0.6rem;
+  align-items: center;
+}
+.image-upload-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.image-upload-row input[type="file"] {
+  padding: 0.5rem 0.65rem;
+  min-height: 42px;
+}
+.image-preview-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--card-border);
+  background: var(--white);
+}
 
 /* ===== BUTTONS ===== */
 button, .btn {
@@ -875,6 +912,14 @@ button:active { transform: translateY(0); }
   .admin-item { padding: 0.75rem; }
   .admin-product-head { align-items: flex-start; }
   .admin-order-actions button { flex: 1 1 45%; }
+  .image-upload-row {
+    grid-template-columns: 64px minmax(0, 1fr) 42px;
+    gap: 0.45rem;
+  }
+  .image-preview-thumb {
+    width: 40px;
+    height: 40px;
+  }
   .catalog-section { padding: 3rem 1rem 3.2rem; }
   .catalog { grid-template-columns: 1fr; gap: 1rem; }
   .product-meta { padding: 1rem; }
