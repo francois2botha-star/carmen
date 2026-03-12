@@ -857,27 +857,33 @@ button:active { transform: translateY(0); }
 }
 @media (max-width: 640px) {
   body { line-height: 1.55; }
-  .top-nav { padding: 0.85rem 0.75rem; }
+  .top-nav {
+    padding: 0.7rem 0.75rem;
+    gap: 0.5rem;
+  }
   .nav-brand { font-size: 1.3rem; }
   .nav-links {
     width: 100%;
-    gap: 0.55rem;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .nav-links a, .nav-dropdown > a {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    min-height: 42px;
-    padding: 0.45rem 0.6rem;
+    width: auto;
+    min-height: 36px;
+    padding: 0.35rem 0.7rem;
     border: 1px solid var(--pink-light);
     border-radius: 10px;
     background: var(--white);
+    font-size: 0.82rem;
   }
   .nav-wa {
-    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 0.1rem;
   }
   .cart-link {
     justify-content: center;
@@ -886,15 +892,9 @@ button:active { transform: translateY(0); }
     right: 16px;
     top: -6px;
   }
-  .nav-links > a, .nav-dropdown > a { font-size: 0.85rem; }
+  .nav-links > a, .nav-dropdown > a { font-size: 0.82rem; }
   .nav-submenu {
-    position: static;
-    display: block;
-    border: none;
-    box-shadow: none;
-    padding: 0.25rem 0 0;
-    background: transparent;
-    min-width: auto;
+    display: none !important;
   }
   .hero { padding: 4.2rem 1rem 3.2rem; }
   .hero-eyebrow { font-size: 0.7rem; letter-spacing: 0.18em; margin-bottom: 0.9rem; }
