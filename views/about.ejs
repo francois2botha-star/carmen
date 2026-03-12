@@ -26,6 +26,10 @@
       </div>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
+      <a href="/cart" class="cart-link">
+        🛒 Cart
+        <span id="cart-badge" class="cart-badge"></span>
+      </a>
       <a class="nav-wa" href="https://wa.me/<%= whatsappNumber %>" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
     </div>
   </nav>
@@ -119,6 +123,8 @@
     </div>
     <p class="footer-copy">&copy; <%= new Date().getFullYear() %> Carmen Boutique &mdash; All rights reserved.</p>
   </footer>
+
+  <script src="/cart.js"></script>
 
 </body>
 </html>

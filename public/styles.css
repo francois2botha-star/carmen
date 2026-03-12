@@ -39,7 +39,6 @@ body {
 img { display: block; max-width: 100%; }
 a { color: inherit; }
 
-a,
 button,
 input,
 select,
@@ -853,10 +852,10 @@ button:active { transform: translateY(0); }
   .nav-links > a, .nav-dropdown > a { font-size: 0.85rem; }
   .nav-submenu {
     position: static;
-    display: none !important;
+    display: block;
     border: none;
     box-shadow: none;
-    padding: 0;
+    padding: 0.25rem 0 0;
     background: transparent;
     min-width: auto;
   }

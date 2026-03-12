@@ -8,16 +8,22 @@ const { v2: cloudinary } = require('cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || '!Cowbell@abc!';
+const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || crypto.randomBytes(24).toString('hex');
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27799692789';
 const KEEP_ALIVE_ENABLED = String(process.env.KEEP_ALIVE_ENABLED || 'false').toLowerCase() === 'true';
 const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || '';
 const KEEP_ALIVE_INTERVAL_MINUTES = Number(process.env.KEEP_ALIVE_INTERVAL_MINUTES) || 10;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const DEFAULT_CATEGORIES = ['Mens clothing', 'Womens clothing', 'Shoes', 'Perfume', 'Accessories'];
 const ORDER_STATUSES = ['Pending', 'Payment received', 'Order shipped', 'Completed'];
 
 const ADMIN_SESSION_COOKIE = 'carmen_admin_session';
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
+
+if (!process.env.ADMIN_PANEL_PASSWORD) {
+  console.warn('ADMIN_PANEL_PASSWORD is not set. A random runtime password is being used; set ADMIN_PANEL_PASSWORD to access admin login consistently.');
+}
+
 const ADMIN_SESSION_VALUE = crypto
   .createHash('sha256')
   .update(`${ADMIN_PANEL_PASSWORD}|${process.env.ADMIN_SESSION_SALT || 'carmen-boutique'}`)
@@ -454,14 +460,14 @@ app.post('/admin/login', (req, res) => {
 
   res.setHeader(
     'Set-Cookie',
-    `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(ADMIN_SESSION_VALUE)}; Max-Age=${ADMIN_SESSION_TTL_SECONDS}; Path=/admin; HttpOnly; SameSite=Lax`
+    `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(ADMIN_SESSION_VALUE)}; Max-Age=${ADMIN_SESSION_TTL_SECONDS}; Path=/admin; HttpOnly; SameSite=Lax${IS_PRODUCTION ? '; Secure' : ''}`
   );
 
   return res.redirect('/admin');
 });
 
 app.post('/admin/logout', requireAdminAuth, (_req, res) => {
-  res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; Max-Age=0; Path=/admin; HttpOnly; SameSite=Lax`);
+  res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; Max-Age=0; Path=/admin; HttpOnly; SameSite=Lax${IS_PRODUCTION ? '; Secure' : ''}`);
   return res.redirect('/admin/login');
 });
 
@@ -475,15 +481,65 @@ app.get('/admin', requireAdminAuth, async (_req, res) => {
 
 app.post('/orders', async (req, res) => {
   try {
-    const { profile, cart, total } = req.body || {};
+    const { profile, cart } = req.body || {};
     const safeCart = Array.isArray(cart) ? cart : [];
-    const parsedTotal = Number(total);
 
-    if (!profile || !profile.firstName || !profile.lastName || !safeCart.length || Number.isNaN(parsedTotal) || parsedTotal <= 0) {
+    if (!profile || !profile.firstName || !profile.lastName || !safeCart.length) {
+      return res.status(400).json({ error: 'Invalid order payload.' });
+    }
+
+    const normalizedItems = safeCart.map((item) => ({
+      id: Number(item?.id),
+      option: String(item?.option || '').trim(),
+      quantity: Number(item?.quantity)
+    }));
+
+    const hasInvalidItem = normalizedItems.some(
+      (item) => !Number.isInteger(item.id) || item.id <= 0 || !item.option || !Number.isInteger(item.quantity) || item.quantity <= 0 || item.quantity > 99
+    );
+
+    if (hasInvalidItem) {
+      return res.status(400).json({ error: 'Invalid cart items.' });
+    }
+
+    const productIds = [...new Set(normalizedItems.map((item) => item.id))];
+    const productResult = await pool.query(
+      'SELECT id, name, price, gender, in_stock FROM products WHERE id = ANY($1::bigint[])',
+      [productIds]
+    );
+
+    if (productResult.rows.length !== productIds.length) {
+      return res.status(400).json({ error: 'One or more items are no longer available.' });
+    }
+
+    const productMap = new Map(productResult.rows.map((row) => [Number(row.id), row]));
+    let totalCents = 0;
+
+    const sanitizedCart = normalizedItems.map((item) => {
+      const product = productMap.get(item.id);
+      if (!product || !product.in_stock) {
+        throw new Error('ITEM_UNAVAILABLE');
+      }
+
+      const unitPriceCents = Math.round(Number(product.price) * 100);
+      totalCents += unitPriceCents * item.quantity;
+
+      return {
+        id: item.id,
+        name: product.name,
+        price: unitPriceCents / 100,
+        category: product.gender,
+        option: item.option,
+        quantity: item.quantity
+      };
+    });
+
+    if (totalCents <= 0) {
       return res.status(400).json({ error: 'Invalid order payload.' });
     }
 
     const customerName = `${(profile.firstName || '').trim()} ${(profile.lastName || '').trim()}`.trim();
+    const computedTotal = totalCents / 100;
 
     const insertResult = await pool.query(
       `INSERT INTO orders (
@@ -509,14 +565,17 @@ app.post('/orders', async (req, res) => {
         (profile.city || '').trim(),
         (profile.province || '').trim(),
         (profile.postalCode || '').trim(),
-        JSON.stringify(safeCart),
-        parsedTotal,
+        JSON.stringify(sanitizedCart),
+        computedTotal,
         'Pending'
       ]
     );
 
     return res.status(201).json({ id: insertResult.rows[0].id });
-  } catch (_error) {
+  } catch (error) {
+    if (error.message === 'ITEM_UNAVAILABLE') {
+      return res.status(400).json({ error: 'One or more items are unavailable.' });
+    }
     return res.status(500).json({ error: 'Failed to store order.' });
   }
 });
