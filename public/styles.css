@@ -80,7 +80,7 @@ article {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.6rem;
+  gap: 1.4rem;
 }
 .nav-dropdown {
   position: relative;
@@ -349,11 +349,17 @@ article {
 .wa-button:hover { opacity: 0.88; transform: translateY(-1px); }
 .wa-button.disabled { background: #e0e0e0; color: #aaa; cursor: not-allowed; transform: none; opacity: 1; }
 
-.cart-link { position: relative; }
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 14px;
+}
 .cart-badge {
   position: absolute;
-  top: -8px;
-  right: -12px;
+  top: -7px;
+  right: 0px;
   background: var(--pink);
   color: var(--white);
   font-size: 0.7rem;
