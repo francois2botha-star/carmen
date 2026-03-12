@@ -118,68 +118,82 @@
         <p>No products yet.</p>
       <% } %>
 
+      <% const productsByCategory = {}; %>
+      <% products.forEach((product) => { %>
+        <% const categoryName = (product.gender || 'Uncategorized').trim() || 'Uncategorized'; %>
+        <% if (!productsByCategory[categoryName]) { productsByCategory[categoryName] = []; } %>
+        <% productsByCategory[categoryName].push(product); %>
+      <% }) %>
+      <% const groupedCategoryNames = [...new Set([...categoryOptions, ...Object.keys(productsByCategory)])]
+        .filter((categoryName) => productsByCategory[categoryName] && productsByCategory[categoryName].length); %>
+
       <div class="admin-list">
-        <% products.forEach((product) => { %>
-          <article class="admin-item">
-            <div class="admin-product-head">
-              <% if (product.primary_image_path || product.image_path) { %>
-                <img
-                  class="admin-product-thumb"
-                  src="<%= product.primary_image_path || product.image_path %>"
-                  alt="<%= product.name %>"
-                  loading="lazy"
-                />
-              <% } %>
-              <div>
-              <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
-              <p class="meta">R <%= Number(product.price).toFixed(2) %> &bull; <%= product.gender %> &bull; <%= product.in_stock ? 'In stock' : 'Out of stock' %></p>
-              </div>
-            </div>
-
-            <form action="/admin/products/<%= product.id %>/update" method="POST" enctype="multipart/form-data" class="edit-form">
-              <input type="text" name="name" value="<%= product.name %>" placeholder="Product name" required />
-              <textarea name="description" rows="2" placeholder="e.g. Lightweight fragrance, citrus top notes (optional)"><%= product.description %></textarea>
-              <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" placeholder="e.g. 899.00" required />
-              <input type="text" name="options" value="<%= product.optionsArray.join(', ') %>" placeholder="e.g. S, M, L or 30ml, 50ml" required />
-              <% const isCustomCategory = !categoryOptions.includes(product.gender); %>
-              <select name="category" class="category-select" data-custom-target="edit-custom-<%= product.id %>" required>
-                <option value="">Select category</option>
-                <% categoryOptions.forEach((categoryOption) => { %>
-                  <option value="<%= categoryOption %>" <%= product.gender === categoryOption ? 'selected' : '' %>><%= categoryOption %></option>
-                <% }) %>
-                <option value="__custom__" <%= isCustomCategory ? 'selected' : '' %>>Other (custom)</option>
-              </select>
-              <input
-                id="edit-custom-<%= product.id %>"
-                class="custom-category-field <%= isCustomCategory ? '' : 'hidden' %>"
-                type="text"
-                name="customCategory"
-                value="<%= isCustomCategory ? product.gender : '' %>"
-                placeholder="Type custom category"
-              />
-              <label class="checkbox-line">
-                <input type="checkbox" name="inStock" value="1" <%= product.in_stock ? 'checked' : '' %> />
-                In stock
-              </label>
-              <div class="image-upload-group">
-                <p class="image-upload-title">Replace gallery images (up to 5)</p>
-                <div class="image-upload-list">
-                  <% for (let i = 1; i <= 5; i += 1) { %>
-                    <div class="image-upload-row">
-                      <label class="image-upload-label" for="edit-<%= product.id %>-image-<%= i %>">Image <%= i %></label>
-                      <input id="edit-<%= product.id %>-image-<%= i %>" type="file" name="images" accept="image/*" data-preview-target="edit-<%= product.id %>-image-preview-<%= i %>" />
-                      <img id="edit-<%= product.id %>-image-preview-<%= i %>" class="image-preview-thumb hidden" alt="Replacement image <%= i %> preview" />
-                    </div>
+        <% groupedCategoryNames.forEach((categoryName) => { %>
+          <section class="admin-category-group">
+            <h3 class="admin-category-heading"><%= categoryName %></h3>
+            <% productsByCategory[categoryName].forEach((product) => { %>
+              <article class="admin-item admin-item-compact">
+                <div class="admin-product-head">
+                  <% if (product.primary_image_path || product.image_path) { %>
+                    <img
+                      class="admin-product-thumb"
+                      src="<%= product.primary_image_path || product.image_path %>"
+                      alt="<%= product.name %>"
+                      loading="lazy"
+                    />
                   <% } %>
+                  <div>
+                  <h3><a href="/products/<%= product.id %>" style="text-decoration:none;color:inherit;"><%= product.name %></a></h3>
+                  <p class="meta">R <%= Number(product.price).toFixed(2) %> &bull; <%= product.gender %> &bull; <%= product.in_stock ? 'In stock' : 'Out of stock' %></p>
+                  </div>
                 </div>
-              </div>
-              <button type="submit">Update</button>
-            </form>
 
-            <form action="/admin/products/<%= product.id %>/delete" method="POST" class="delete-form">
-              <button type="submit" class="btn-danger">Delete</button>
-            </form>
-          </article>
+                <form action="/admin/products/<%= product.id %>/update" method="POST" enctype="multipart/form-data" class="edit-form">
+                  <input type="text" name="name" value="<%= product.name %>" placeholder="Product name" required />
+                  <textarea name="description" rows="2" placeholder="e.g. Lightweight fragrance, citrus top notes (optional)"><%= product.description %></textarea>
+                  <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" placeholder="e.g. 899.00" required />
+                  <input type="text" name="options" value="<%= product.optionsArray.join(', ') %>" placeholder="e.g. S, M, L or 30ml, 50ml" required />
+                  <% const isCustomCategory = !categoryOptions.includes(product.gender); %>
+                  <select name="category" class="category-select" data-custom-target="edit-custom-<%= product.id %>" required>
+                    <option value="">Select category</option>
+                    <% categoryOptions.forEach((categoryOption) => { %>
+                      <option value="<%= categoryOption %>" <%= product.gender === categoryOption ? 'selected' : '' %>><%= categoryOption %></option>
+                    <% }) %>
+                    <option value="__custom__" <%= isCustomCategory ? 'selected' : '' %>>Other (custom)</option>
+                  </select>
+                  <input
+                    id="edit-custom-<%= product.id %>"
+                    class="custom-category-field <%= isCustomCategory ? '' : 'hidden' %>"
+                    type="text"
+                    name="customCategory"
+                    value="<%= isCustomCategory ? product.gender : '' %>"
+                    placeholder="Type custom category"
+                  />
+                  <label class="checkbox-line">
+                    <input type="checkbox" name="inStock" value="1" <%= product.in_stock ? 'checked' : '' %> />
+                    In stock
+                  </label>
+                  <div class="image-upload-group">
+                    <p class="image-upload-title">Replace gallery images (up to 5)</p>
+                    <div class="image-upload-list">
+                      <% for (let i = 1; i <= 5; i += 1) { %>
+                        <div class="image-upload-row">
+                          <label class="image-upload-label" for="edit-<%= product.id %>-image-<%= i %>">Image <%= i %></label>
+                          <input id="edit-<%= product.id %>-image-<%= i %>" type="file" name="images" accept="image/*" data-preview-target="edit-<%= product.id %>-image-preview-<%= i %>" />
+                          <img id="edit-<%= product.id %>-image-preview-<%= i %>" class="image-preview-thumb hidden" alt="Replacement image <%= i %> preview" />
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                  <button type="submit">Update</button>
+                </form>
+
+                <form action="/admin/products/<%= product.id %>/delete" method="POST" class="delete-form">
+                  <button type="submit" class="btn-danger">Delete</button>
+                </form>
+              </article>
+            <% }) %>
+          </section>
         <% }) %>
       </div>
     </section>
