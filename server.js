@@ -8,7 +8,7 @@ const { v2: cloudinary } = require('cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || crypto.randomBytes(24).toString('hex');
+const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || '!Cowbell@abc!';
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '27799692789';
 const KEEP_ALIVE_ENABLED = String(process.env.KEEP_ALIVE_ENABLED || 'false').toLowerCase() === 'true';
 const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || '';
@@ -19,10 +19,6 @@ const ORDER_STATUSES = ['Pending', 'Payment received', 'Order shipped', 'Complet
 
 const ADMIN_SESSION_COOKIE = 'carmen_admin_session';
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
-
-if (!process.env.ADMIN_PANEL_PASSWORD) {
-  console.warn('ADMIN_PANEL_PASSWORD is not set. A random runtime password is being used; set ADMIN_PANEL_PASSWORD to access admin login consistently.');
-}
 
 const ADMIN_SESSION_VALUE = crypto
   .createHash('sha256')
