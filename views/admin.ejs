@@ -48,8 +48,8 @@
         </label>
 
         <label>
-          Sizes/Volumes (comma-separated)
-          <input type="text" name="options" placeholder="S, M, L or 50ml, 100ml" required />
+          Sizes/Volumes / Color Variants
+          <textarea name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required></textarea>
         </label>
 
         <label>
@@ -162,7 +162,7 @@
                     <input type="text" name="name" value="<%= product.name %>" placeholder="Product name" required />
                     <textarea name="description" rows="2" placeholder="e.g. Lightweight fragrance, citrus top notes (optional)"><%= product.description %></textarea>
                     <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" placeholder="e.g. 899.00" required />
-                    <input type="text" name="options" value="<%= product.optionsArray.join(', ') %>" placeholder="e.g. S, M, L or 30ml, 50ml" required />
+                    <textarea name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required><%= product.adminOptionsInput %></textarea>
                     <select name="category" class="category-select" data-custom-target="edit-custom-<%= product.id %>" required>
                       <option value="">Select category</option>
                       <% categoryOptions.forEach((categoryOption) => { %>

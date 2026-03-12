@@ -101,6 +101,122 @@ function parseOptions(rawOptions) {
     .filter(Boolean);
 }
 
+function normalizeVariantOptions(variants) {
+  if (!Array.isArray(variants)) {
+    return [];
+  }
+
+  return variants
+    .map((variant) => {
+      const color = String(variant?.color || '').trim();
+      const rawSizes = Array.isArray(variant?.sizes)
+        ? variant.sizes
+        : String(variant?.sizes || '')
+          .split(',');
+
+      const sizes = rawSizes
+        .map((sizeValue) => String(sizeValue || '').trim())
+        .filter(Boolean);
+
+      return { color, sizes };
+    })
+    .filter((variant) => variant.color && variant.sizes.length)
+    .map((variant) => ({
+      color: variant.color,
+      sizes: [...new Set(variant.sizes)]
+    }));
+}
+
+function parseVariantOptionsFromText(rawOptions) {
+  const lines = String(rawOptions || '')
+    .split(/\r?\n|;/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length || lines.some((line) => !line.includes(':'))) {
+    return [];
+  }
+
+  const parsed = lines.map((line) => {
+    const separatorIndex = line.indexOf(':');
+    const color = line.slice(0, separatorIndex).trim();
+    const sizesPart = line.slice(separatorIndex + 1).trim();
+    const sizes = sizesPart
+      .split(/[\s,|/]+/)
+      .map((sizeValue) => sizeValue.trim())
+      .filter(Boolean);
+
+    return { color, sizes };
+  });
+
+  return normalizeVariantOptions(parsed);
+}
+
+function formatVariantOptionsForInput(variantOptions) {
+  return variantOptions
+    .map((variant) => `${variant.color}: ${variant.sizes.join(', ')}`)
+    .join('\n');
+}
+
+function decodeStoredOptions(rawOptions) {
+  const rawText = String(rawOptions || '').trim();
+  if (!rawText) {
+    return { optionsArray: [], variantOptions: [], adminOptionsInput: '' };
+  }
+
+  try {
+    const parsed = JSON.parse(rawText);
+    if (parsed && parsed.type === 'color-size' && Array.isArray(parsed.variants)) {
+      const variantOptions = normalizeVariantOptions(parsed.variants);
+      return {
+        optionsArray: variantOptions.flatMap((variant) => variant.sizes.map((sizeValue) => `${variant.color} - ${sizeValue}`)),
+        variantOptions,
+        adminOptionsInput: formatVariantOptionsForInput(variantOptions)
+      };
+    }
+  } catch (_error) {
+    // Non-JSON option storage (legacy comma-separated values).
+  }
+
+  const variantOptionsFromText = parseVariantOptionsFromText(rawText);
+  if (variantOptionsFromText.length) {
+    return {
+      optionsArray: variantOptionsFromText.flatMap((variant) => variant.sizes.map((sizeValue) => `${variant.color} - ${sizeValue}`)),
+      variantOptions: variantOptionsFromText,
+      adminOptionsInput: formatVariantOptionsForInput(variantOptionsFromText)
+    };
+  }
+
+  const legacyOptions = parseOptions(rawText);
+  return {
+    optionsArray: legacyOptions,
+    variantOptions: [],
+    adminOptionsInput: legacyOptions.join(', ')
+  };
+}
+
+function encodeOptionsForStorage(rawOptions) {
+  const rawText = String(rawOptions || '').trim();
+  if (!rawText) {
+    return null;
+  }
+
+  const variantOptions = parseVariantOptionsFromText(rawText);
+  if (variantOptions.length) {
+    return JSON.stringify({
+      type: 'color-size',
+      variants: variantOptions
+    });
+  }
+
+  const legacyOptions = parseOptions(rawText);
+  if (!legacyOptions.length) {
+    return null;
+  }
+
+  return legacyOptions.join(', ');
+}
+
 function normalizePhone(input) {
   return (input || '').replace(/[^0-9]/g, '');
 }
@@ -136,9 +252,12 @@ function requireAdminAuth(req, res, next) {
 }
 
 function toViewProduct(row) {
+  const decodedOptions = decodeStoredOptions(row.sizes);
   return {
     ...row,
-    optionsArray: (row.sizes || '').split(',').map((s) => s.trim()).filter(Boolean)
+    optionsArray: decodedOptions.optionsArray,
+    variantOptions: decodedOptions.variantOptions,
+    adminOptionsInput: decodedOptions.adminOptionsInput
   };
 }
 
@@ -654,8 +773,8 @@ app.post('/admin/products', requireAdminAuth, upload.array('images', 5), async (
       return await renderAdminWithMessage(res, 'Name, price, options, and category are required.', null);
     }
 
-    const parsedOptions = parseOptions(options);
-    if (!parsedOptions.length) {
+    const encodedOptions = encodeOptionsForStorage(options);
+    if (!encodedOptions) {
       return await renderAdminWithMessage(res, 'Provide at least one option.', null);
     }
 
@@ -676,7 +795,7 @@ app.post('/admin/products', requireAdminAuth, upload.array('images', 5), async (
         name.trim(),
         (description || '').trim(),
         parsedPrice,
-        parsedOptions.join(', '),
+        encodedOptions,
         resolvedCategory,
         primaryImage.imagePath,
         primaryImage.imagePublicId,
@@ -721,8 +840,8 @@ app.post('/admin/products/:id/update', requireAdminAuth, upload.array('images', 
       return await renderAdminWithMessage(res, 'Name, price, options, and category are required.', null);
     }
 
-    const parsedOptions = parseOptions(options);
-    if (!parsedOptions.length) {
+    const encodedOptions = encodeOptionsForStorage(options);
+    if (!encodedOptions) {
       return await renderAdminWithMessage(res, 'Provide at least one option.', null);
     }
 
@@ -784,7 +903,7 @@ app.post('/admin/products/:id/update', requireAdminAuth, upload.array('images', 
         name.trim(),
         (description || '').trim(),
         parsedPrice,
-        parsedOptions.join(', '),
+        encodedOptions,
         resolvedCategory,
         nextImagePath,
         nextImagePublicId,

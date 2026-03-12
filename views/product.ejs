@@ -61,9 +61,19 @@
         <label class="product-option-label">Select option:</label>
         <select id="productOptionSelect" class="product-option-select">
           <option value="">-- Choose size/variant --</option>
-          <% product.optionsArray.forEach((option) => { %>
-            <option value="<%= option %>"><%= option %></option>
-          <% }) %>
+          <% if (product.variantOptions && product.variantOptions.length) { %>
+            <% product.variantOptions.forEach((variant) => { %>
+              <optgroup label="<%= variant.color %>">
+                <% variant.sizes.forEach((sizeValue) => { %>
+                  <option value="<%= variant.color %> - <%= sizeValue %>"><%= variant.color %> • <%= sizeValue %></option>
+                <% }) %>
+              </optgroup>
+            <% }) %>
+          <% } else { %>
+            <% product.optionsArray.forEach((option) => { %>
+              <option value="<%= option %>"><%= option %></option>
+            <% }) %>
+          <% } %>
         </select>
       </div>
 

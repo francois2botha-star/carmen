@@ -78,16 +78,18 @@
       <span class="section-label">Our collection</span>
       <h2>Shop everything</h2>
       <p class="sub">Filter by category or browse all &mdash; every piece is ready to order on WhatsApp.</p>
-      <form class="catalog-filter" method="GET" action="/">
-        <% categories.forEach(function(category) { %>
-          <button
-            type="submit"
-            name="category"
-            value="<%= category %>"
-            class="filter-pill <%= selectedCategory === category ? 'active' : '' %>"
-          ><%= category %></button>
-        <% }); %>
-      </form>
+      <div class="catalog-filter-wrap">
+        <form class="catalog-filter" method="GET" action="/">
+          <% categories.forEach(function(category) { %>
+            <button
+              type="submit"
+              name="category"
+              value="<%= category %>"
+              class="filter-pill <%= selectedCategory === category ? 'active' : '' %>"
+            ><%= category %></button>
+          <% }); %>
+        </form>
+      </div>
     </div>
 
     <% if (!products.length) { %>
@@ -121,9 +123,19 @@
                 <label class="product-option-label">Select option:</label>
                 <select class="product-option-select">
                   <option value="">-- Choose size/variant --</option>
-                  <% product.optionsArray.forEach(function(option) { %>
-                    <option value="<%= option.trim() %>"><%= option.trim() %></option>
-                  <% }); %>
+                  <% if (product.variantOptions && product.variantOptions.length) { %>
+                    <% product.variantOptions.forEach(function(variant) { %>
+                      <optgroup label="<%= variant.color %>">
+                        <% variant.sizes.forEach(function(sizeValue) { %>
+                          <option value="<%= variant.color %> - <%= sizeValue %>"><%= variant.color %> • <%= sizeValue %></option>
+                        <% }); %>
+                      </optgroup>
+                    <% }); %>
+                  <% } else { %>
+                    <% product.optionsArray.forEach(function(option) { %>
+                      <option value="<%= option.trim() %>"><%= option.trim() %></option>
+                    <% }); %>
+                  <% } %>
                 </select>
               </div>
 
