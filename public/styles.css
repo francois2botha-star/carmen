@@ -807,6 +807,27 @@ textarea { resize: vertical; min-height: 80px; }
   border: 1px solid var(--card-border);
   background: var(--white);
 }
+.variant-helper {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+.variant-helper label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.variant-helper-input {
+  min-height: 70px;
+  font-size: 0.83rem;
+  padding: 0.5rem 0.65rem;
+}
+.variant-helper-btn {
+  justify-self: start;
+  padding: 0.42rem 0.75rem;
+  font-size: 0.76rem;
+}
 
 /* ===== BUTTONS ===== */
 button, .btn {

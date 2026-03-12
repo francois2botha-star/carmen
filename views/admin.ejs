@@ -49,8 +49,19 @@
 
         <label>
           Sizes/Volumes / Color Variants
-          <textarea name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required></textarea>
+          <textarea id="add-options" name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required></textarea>
         </label>
+
+        <div class="variant-helper">
+          <label for="add-variant-paste">Paste WhatsApp color/size text</label>
+          <textarea id="add-variant-paste" class="variant-helper-input" rows="3" placeholder="Example:\nBlue 4 5 6 7 8\nTan 3 5 6 7\nBlack 6"></textarea>
+          <button
+            type="button"
+            class="btn-secondary variant-helper-btn"
+            data-source-input="add-variant-paste"
+            data-target-options="add-options"
+          >Auto-format options</button>
+        </div>
 
         <label>
           Category
@@ -162,7 +173,17 @@
                     <input type="text" name="name" value="<%= product.name %>" placeholder="Product name" required />
                     <textarea name="description" rows="2" placeholder="e.g. Lightweight fragrance, citrus top notes (optional)"><%= product.description %></textarea>
                     <input type="number" name="price" min="1" step="0.01" value="<%= Number(product.price).toFixed(2) %>" placeholder="e.g. 899.00" required />
-                    <textarea name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required><%= product.adminOptionsInput %></textarea>
+                    <textarea id="edit-options-<%= product.id %>" name="options" rows="3" placeholder="Simple: S, M, L\nOr variants:\nBlue: 4, 5, 6, 7, 8\nTan: 3, 5, 6, 7" required><%= product.adminOptionsInput %></textarea>
+                    <div class="variant-helper">
+                      <label for="edit-variant-paste-<%= product.id %>">Paste WhatsApp color/size text</label>
+                      <textarea id="edit-variant-paste-<%= product.id %>" class="variant-helper-input" rows="3" placeholder="Example:\nBlue 4 5 6 7 8\nTan 3 5 6 7\nBlack 6"></textarea>
+                      <button
+                        type="button"
+                        class="btn-secondary variant-helper-btn"
+                        data-source-input="edit-variant-paste-<%= product.id %>"
+                        data-target-options="edit-options-<%= product.id %>"
+                      >Auto-format options</button>
+                    </div>
                     <select name="category" class="category-select" data-custom-target="edit-custom-<%= product.id %>" required>
                       <option value="">Select category</option>
                       <% categoryOptions.forEach((categoryOption) => { %>
@@ -344,6 +365,79 @@
 
     document.querySelectorAll('.admin-modal [data-close-modal]').forEach((closer) => {
       closer.addEventListener('click', closeAllModals);
+    });
+
+    function parseWhatsappVariantText(rawText) {
+      const lines = String(rawText || '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      const variants = new Map();
+
+      lines.forEach((line) => {
+        if (/^sale\b/i.test(line)) {
+          return;
+        }
+
+        let color = '';
+        let sizesPart = '';
+
+        if (line.includes(':')) {
+          const separatorIndex = line.indexOf(':');
+          color = line.slice(0, separatorIndex).trim();
+          sizesPart = line.slice(separatorIndex + 1).trim();
+        } else {
+          const match = line.match(/^([A-Za-z][A-Za-z\s/-]*?)\s+([0-9A-Za-z\s,./-]+)$/);
+          if (!match) {
+            return;
+          }
+          color = match[1].trim();
+          sizesPart = match[2].trim();
+        }
+
+        if (!color || !sizesPart) {
+          return;
+        }
+
+        const sizes = sizesPart
+          .split(/[\s,|/]+/)
+          .map((sizeValue) => sizeValue.trim())
+          .filter(Boolean);
+
+        if (!sizes.length) {
+          return;
+        }
+
+        const existing = variants.get(color) || [];
+        const merged = [...existing, ...sizes].filter((value, index, array) => array.indexOf(value) === index);
+        variants.set(color, merged);
+      });
+
+      return Array.from(variants.entries())
+        .map(([color, sizes]) => `${color}: ${sizes.join(', ')}`)
+        .join('\n');
+    }
+
+    document.querySelectorAll('.variant-helper-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sourceId = button.dataset.sourceInput;
+        const targetId = button.dataset.targetOptions;
+        const sourceInput = document.getElementById(sourceId);
+        const targetInput = document.getElementById(targetId);
+
+        if (!sourceInput || !targetInput) {
+          return;
+        }
+
+        const formatted = parseWhatsappVariantText(sourceInput.value);
+        if (!formatted) {
+          window.alert('Could not detect color + size lines. Paste lines like: Blue 4 5 6 7');
+          return;
+        }
+
+        targetInput.value = formatted;
+      });
     });
 
     document.addEventListener('keydown', (event) => {
