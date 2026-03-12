@@ -212,9 +212,15 @@
             <% if (orderItems.length) { %>
               <div class="order-items-admin">
                 <% orderItems.forEach((item) => { %>
+                  <% const safeName = (item && item.name) ? item.name : 'Unnamed item'; %>
+                  <% const safeOption = (item && item.option) ? item.option : 'N/A'; %>
+                  <% const safeQty = Number(item && item.quantity); %>
+                  <% const quantity = Number.isFinite(safeQty) && safeQty > 0 ? safeQty : 0; %>
+                  <% const safePrice = Number(item && item.price); %>
+                  <% const lineTotal = Number.isFinite(safePrice) ? safePrice * quantity : null; %>
                   <div class="order-item-admin-row">
-                    <span><%= item.name %> (<%= item.option %>) × <%= item.quantity %></span>
-                    <span>R <%= Number(item.price * item.quantity).toFixed(2) %></span>
+                    <span><%= safeName %> (<%= safeOption %>) × <%= quantity %></span>
+                    <span><%= Number.isFinite(lineTotal) ? `R ${lineTotal.toFixed(2)}` : 'R —' %></span>
                   </div>
                 <% }) %>
               </div>
